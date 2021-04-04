@@ -113,8 +113,7 @@ impl Board {
                     }
                 }
 
-                if (
-                    horizontal_count[0] == DiscType::T && 
+                if  horizontal_count[0] == DiscType::T && 
                     horizontal_count[1] == DiscType::O &&
                     horizontal_count[2] == DiscType::O && 
                     horizontal_count[3] == DiscType::T ||
@@ -130,9 +129,9 @@ impl Board {
                     right_diagonal_count[1] == DiscType::O &&
                     right_diagonal_count[2] == DiscType::O && 
                     right_diagonal_count[3] == DiscType::T
-                ) {
+                {
                     return GameEvent::IsTOOT
-                } else if (
+                } else if 
                     horizontal_count[0] == DiscType::O && 
                     horizontal_count[1] == DiscType::T &&
                     horizontal_count[2] == DiscType::T && 
@@ -149,7 +148,7 @@ impl Board {
                     right_diagonal_count[1] == DiscType::T &&
                     right_diagonal_count[2] == DiscType::T && 
                     right_diagonal_count[3] == DiscType::O
-                ) {
+                {
                     return GameEvent::IsOTTO
                 }
             }
