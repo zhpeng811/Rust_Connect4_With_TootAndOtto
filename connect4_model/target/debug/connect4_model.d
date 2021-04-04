@@ -1,1 +1,0 @@
-/mnt/c/Users/pengz/Documents/UofA\ Winter\ 2021/ECE\ 421/Project/connect4-with-toot-and-otto/connect4_model/target/debug/connect4_model: /mnt/c/Users/pengz/Documents/UofA\ Winter\ 2021/ECE\ 421/Project/connect4-with-toot-and-otto/connect4_model/src/connect4.rs /mnt/c/Users/pengz/Documents/UofA\ Winter\ 2021/ECE\ 421/Project/connect4-with-toot-and-otto/connect4_model/src/main.rs
