@@ -6,6 +6,10 @@ use yew_router::{components::RouterAnchor, prelude::*, switch::Permissive};
 
 #[derive(Clone, Debug, Switch)]
 pub enum AppRoute {
+    #[to = "/how-to-connect-4"]
+    HowToConnect4,
+    #[to = "/how-to-toot"]
+    HowToToot,
     #[to = "/page-not-found"]
     PageNotFound(Permissive<String>),
     #[to = "/!"]

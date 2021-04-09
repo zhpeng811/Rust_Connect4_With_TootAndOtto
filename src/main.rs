@@ -9,7 +9,7 @@ use yew_router::{route::Route, switch::Permissive};
 // mod components;
 mod pages;
 use pages::{
-    connect_4_app::Home, page_not_found::PageNotFound,
+    connect_4_app::Home, how_to_connect_4::HowToConnect4, how_to_toot::HowToToot, page_not_found::PageNotFound,
 };
 mod switch;
 use switch::{AppAnchor, AppRoute, AppRouter, PublicUrlSwitch};
@@ -52,24 +52,14 @@ impl Component for Model {
             <>
                 { self.view_nav() }
 
-                <main>
+                <div class="w3-main" style="margin-left:390px;margin-right:40px">
                     <AppRouter
                         render=AppRouter::render(Self::switch)
                         redirect=AppRouter::redirect(|route: Route| {
                             AppRoute::PageNotFound(Permissive(Some(route.route))).into_public()
                         })
                     />
-                </main>
-                <footer class="footer">
-                    <div class="content has-text-centered">
-                        { "Powered by " }
-                        <a href="https://yew.rs">{ "Yew" }</a>
-                        { " using " }
-                        <a href="https://bulma.io">{ "Bulma" }</a>
-                        { " and images from " }
-                        <a href="https://unsplash.com">{ "Unsplash" }</a>
-                    </div>
-                </footer>
+                </div>
             </>
         }
     }
@@ -92,11 +82,15 @@ impl Model {
                     <div class="w3-container">
                     <h3 class="w3-padding-64"><b>{"Play"}<br/>{"Connect4 / TOOT-OTTO"}</b></h3>
                     </div>
-                    <a href="#/HowToConnect4" class="w3-padding w3-hover-white">{"How to Play Connect4"}</a>
+                    <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::HowToConnect4>
+                        {"How to Play Connect4"}
+                    </AppAnchor>
                     <a href="#/Connect4Computer" class="w3-padding w3-hover-white">{"Play Connect4 With Computer"}</a>
                     <a href="#/Connect4Human" class="w3-padding w3-hover-white">{"Play Connect4 with Another Human"}</a>
                     <br/>
-                    <a href="#/HowToToot" class="w3-padding w3-hover-white">{"How to Play TOOT-OTTO"}</a>
+                    <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::HowToToot>
+                        {"How to Play TOOT-OTTO"}
+                    </AppAnchor>
                     <a href="#/TootOttoComputer" class="w3-padding w3-hover-white">{"Play Toot-Otto With Computer"}</a>
                     <a href="#/TootOttoHuman" class="w3-padding w3-hover-white">{"Play Toot-Otto With Another Human"}</a>
                     <br/>
@@ -120,6 +114,12 @@ impl Model {
         match switch.route() {
             AppRoute::Home => {
                 html! { <Home /> }
+            }
+            AppRoute::HowToConnect4 => {
+                html! { <HowToConnect4 /> }
+            }
+            AppRoute::HowToToot => {
+                html! { <HowToToot /> }
             }
             AppRoute::PageNotFound(Permissive(route)) => {
                 html! { <PageNotFound route=route /> }
