@@ -1,3 +1,14 @@
+## Ignore the wasm default
+
+To run, install [trunk](https://crates.io/crates/trunk).
+**Make sure to run `cargo install wasm-bindgen-cli` in the instructions.**
+Then ensure MongoDB is running on the default port (27017).
+
+To run the code just use
+```
+trunk serve
+```
+
 <div align="center">
 
   <h1><code>wasm-pack-template</code></h1>
