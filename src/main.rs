@@ -9,7 +9,11 @@ use yew_router::{route::Route, switch::Permissive};
 // mod components;
 mod pages;
 use pages::{
-    connect_4_app::Home, how_to_connect_4::HowToConnect4, how_to_toot::HowToToot, page_not_found::PageNotFound,
+    connect_4_app::Home, 
+    how_to_connect_4::HowToConnect4,
+    play_connect_4_with_human::PlayConnect4WithHuman,
+    how_to_toot::HowToToot, 
+    page_not_found::PageNotFound,
 };
 mod switch;
 use switch::{AppAnchor, AppRoute, AppRouter, PublicUrlSwitch};
@@ -85,7 +89,9 @@ impl Model {
                     <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::HowToConnect4>
                         {"How to Play Connect4"}
                     </AppAnchor>
-                    <a href="#/Connect4Computer" class="w3-padding w3-hover-white">{"Play Connect4 With Computer"}</a>
+                    <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::PlayConnect4WithHuman>
+                        {"Play Connect4 With Computer"}
+                    </AppAnchor>
                     <a href="#/Connect4Human" class="w3-padding w3-hover-white">{"Play Connect4 with Another Human"}</a>
                     <br/>
                     <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::HowToToot>
@@ -118,6 +124,9 @@ impl Model {
             AppRoute::HowToConnect4 => {
                 html! { <HowToConnect4 /> }
             }
+            AppRoute::PlayConnect4WithHuman => {
+                html! { <PlayConnect4WithHuman/> }
+            }
             AppRoute::HowToToot => {
                 html! { <HowToToot /> }
             }
@@ -129,6 +138,7 @@ impl Model {
 }
 
 fn main() {
-    wasm_logger::init(wasm_logger::Config::new(log::Level::Trace));
+    wasm_logger::init(wasm_logger::Config::default());
+    // wasm_logger::init(wasm_logger::Config::new(log::Level::Trace));
     yew::start_app::<Model>();
 }

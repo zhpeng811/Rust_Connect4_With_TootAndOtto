@@ -7,3 +7,4 @@ wasm-pack.log
 model/target
 model/Cargo.lock
 /dist
+.DS_Store
