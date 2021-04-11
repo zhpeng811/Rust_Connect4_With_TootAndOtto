@@ -13,6 +13,7 @@ use pages::{
     how_to_connect_4::HowToConnect4,
     play_connect_4_with_human::PlayConnect4WithHuman,
     how_to_toot::HowToToot, 
+    game_history::GameHistory,
     page_not_found::PageNotFound,
 };
 mod switch;
@@ -100,7 +101,9 @@ impl Model {
                     <a href="#/TootOttoComputer" class="w3-padding w3-hover-white">{"Play Toot-Otto With Computer"}</a>
                     <a href="#/TootOttoHuman" class="w3-padding w3-hover-white">{"Play Toot-Otto With Another Human"}</a>
                     <br/>
-                    <a href="#/ScoreBoard" class="w3-padding w3-hover-white">{"View Game History"}</a>
+                    <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::GameHistory>
+                        {"View Game History"}
+                    </AppAnchor>
                     <a href="#/Scores" class="w3-padding w3-hover-white">{"Score Board"}</a>
                 </nav>
 
@@ -129,6 +132,9 @@ impl Model {
             }
             AppRoute::HowToToot => {
                 html! { <HowToToot /> }
+            }
+            AppRoute::GameHistory => {
+                html! { <GameHistory /> }
             }
             AppRoute::PageNotFound(Permissive(route)) => {
                 html! { <PageNotFound route=route /> }

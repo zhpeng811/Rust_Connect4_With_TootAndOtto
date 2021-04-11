@@ -12,6 +12,8 @@ pub enum AppRoute {
     PlayConnect4WithHuman,
     #[to = "/how-to-toot"]
     HowToToot,
+    #[to = "/game-history"]
+    GameHistory,
     #[to = "/page-not-found"]
     PageNotFound(Permissive<String>),
     #[to = "/!"]
