@@ -14,3 +14,8 @@ impl ToString for Difficulty {
         }
     }
 }
+
+pub struct AIConfig {
+    carlo_iter: isize,
+    minmax_depth: isize,
+}
