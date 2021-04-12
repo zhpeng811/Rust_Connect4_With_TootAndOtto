@@ -14,6 +14,7 @@ use pages::{
     play_connect_4_with_human::PlayConnect4WithHuman,
     how_to_toot::HowToToot, 
     game_history::GameHistory,
+    score_board::ScoreBoard,
     page_not_found::PageNotFound,
 };
 mod switch;
@@ -104,7 +105,9 @@ impl Model {
                     <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::GameHistory>
                         {"View Game History"}
                     </AppAnchor>
-                    <a href="#/Scores" class="w3-padding w3-hover-white">{"Score Board"}</a>
+                    <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::ScoreBoard>
+                        {"Score Board"}
+                    </AppAnchor>
                 </nav>
 
                 // <!-- Top menu on small screens -->
@@ -135,6 +138,9 @@ impl Model {
             }
             AppRoute::GameHistory => {
                 html! { <GameHistory /> }
+            }
+            AppRoute::ScoreBoard => {
+                html! { <ScoreBoard /> }
             }
             AppRoute::PageNotFound(Permissive(route)) => {
                 html! { <PageNotFound route=route /> }

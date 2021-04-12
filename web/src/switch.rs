@@ -14,6 +14,8 @@ pub enum AppRoute {
     HowToToot,
     #[to = "/game-history"]
     GameHistory,
+    #[to = "/score-board"]
+    ScoreBoard,
     #[to = "/page-not-found"]
     PageNotFound(Permissive<String>),
     #[to = "/!"]

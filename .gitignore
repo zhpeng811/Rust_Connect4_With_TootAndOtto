@@ -1,12 +1,8 @@
-/target
+*/target
 **/*.rs.bk
-Cargo.lock
+*/Cargo.lock
 bin/
 pkg/
 wasm-pack.log
-model/target
-model/Cargo.lock
-mongodb_lib/target
-mongodb_lib/Cargo.lock
-/dist
+*/dist
 .DS_Store
