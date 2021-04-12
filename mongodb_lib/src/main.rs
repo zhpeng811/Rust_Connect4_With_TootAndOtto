@@ -8,7 +8,7 @@ use mongodb::{Client, Collection, error::Error};
 use rocket::config::{Config, Environment};
 
 mod database {
-    use mongodb::{Client, Collection, error::Error, results::InsertOneResult};
+    use mongodb::Collection;
     use bson::{doc, Bson};
     use chrono::Utc;
     use rocket::State;
@@ -17,11 +17,11 @@ mod database {
 
     #[derive(Serialize, Deserialize, Debug)]
     pub struct HistoryInfo {
-        game_type: String,
-        player1: String,
-        player2: String,
-        winner: String,
-        time_played: String,
+        pub game_type: String,
+        pub player1: String,
+        pub player2: String,
+        pub winner: String,
+        pub time_played: String,
     }
 
     #[get("/history")]
@@ -66,9 +66,18 @@ mod database {
 
     #[post("/history", format="json", data="<history>")]
     pub fn insert_history(collection: State<Collection>, history: Json<HistoryInfo>) {
-        if let Ok(Bson::Document(document)) = bson::to_bson(&history.into_inner()) {
-            collection.insert_one(document, None);
-        }
+        let body = history.into_inner();
+
+        // the time_played field from HistoryInfo is ignored here
+        // front end can pass any string since it won't be used
+        let doc = doc! {
+            "gameType": body.game_type,
+            "Player1Name": body.player1,
+            "Player2Name": body.player2,
+            "WinnerName": body.winner,
+            "GameDate": Utc::now()
+        };
+        let _ = collection.insert_one(doc, None);
     }
 }
 
