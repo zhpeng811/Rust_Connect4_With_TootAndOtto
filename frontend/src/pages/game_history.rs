@@ -111,22 +111,21 @@ impl Component for GameHistory {
             <div class="w3-container" id="services" style="margin-top:75px">
                 <h5 class="w3-xxxlarge w3-text-red"><b>{"Game History"}</b></h5>
                 <hr style="width:50px;border:5px solid red" class="w3-round" />
-    
-	            <div id="game-stream">
-	                <table>
-			            <tr>
-                            <th>{"Game-ID"}</th>
-                            <th>{"Game Type"}</th>
-                            <th>{"Player1"}</th>
-                            <th>{"Player2"}</th>
-                            <th>{"Winner"}</th>
-                            <th>{"When Played"}</th>
-  			            </tr>
+                
+                <table>
+                    <tr>
+                        <th>{"Game-ID"}</th>
+                        <th>{"Game Type"}</th>
+                        <th>{"Player1"}</th>
+                        <th>{"Player2"}</th>
+                        <th>{"Winner"}</th>
+                        <th>{"When Played"}</th>
+  			        </tr>
 
-                        { self.view_history() }
-		            </table>
-			    </div>
-		    </div>
+                    { self.view_history() }
+                
+                </table>
+			</div>
         }
     }
 }
