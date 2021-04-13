@@ -120,12 +120,12 @@ impl Component for GameHistory {
                         <th>{"Player2"}</th>
                         <th>{"Winner"}</th>
                         <th>{"When Played"}</th>
-  			        </tr>
+                    </tr>
 
                     { self.view_history() }
                 
                 </table>
-			</div>
+            </div>
         }
     }
 }
