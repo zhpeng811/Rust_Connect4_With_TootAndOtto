@@ -1,6 +1,4 @@
-## Ignore the wasm default
-
-### To Run the web
+### To Run the web frontend
 To run, install [trunk](https://crates.io/crates/trunk).
 **Make sure to run `cargo install wasm-bindgen-cli` in the instructions.**
 
@@ -10,7 +8,7 @@ trunk serve
 ```
 Or you can do it in one-shot with
 ```
-(cd web && trunk serve)
+(cd frontend && trunk serve)
 ```
 ### To Run MongoDB backend
 1. Make sure MongoDB is installed on your machine, detail of installation can be found [here](https://docs.mongodb.com/manual/installation/)
@@ -20,8 +18,12 @@ Or you can do it in one-shot with
 rustup override set nightly
 ```
 **Make sure the above command is performed at the root directory of this project**
-4. Run the backend by switching to the `mongodb_lib` folder and use
+4. Run the backend by switching to the `backend` folder and use
 ```
 cargo run
+```
+Or you can also do it in one-shot with
+```
+(cd backend && cargo run)
 ```
 A rocket will be launched at `127.0.0.1:8000`, opening that URL is not necessary (there is nothing at that URL), the URL is used to serve HTTP `POST` and `GET` requests
