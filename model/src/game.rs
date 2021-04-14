@@ -13,6 +13,7 @@ pub enum GameEvent {
     Neither,
     PlaceColumnFull,
     UnexpectedErr,
+    Ongoing
 }
 
 #[derive(Debug, PartialEq)]
@@ -27,7 +28,8 @@ pub struct BoardGame {
     pub player2: Player,
     pub current_player: usize,
     pub game_type: GameType,
-    pub turns: isize
+    pub turns: isize,
+    pub status: GameEvent
 }
 
 impl BoardGame {
@@ -39,7 +41,9 @@ impl BoardGame {
             player1: Player::new(PlayerType::Human, DiscType::Red),
             player2: Player::new(player2_type, DiscType::Yellow),
             current_player: 1,
-            game_type: GameType::Connect4
+            game_type: GameType::Connect4,
+            turns: 0,
+            status: GameEvent::Ongoing
         }
     }
 
@@ -51,7 +55,9 @@ impl BoardGame {
             player1: Player::new(PlayerType::Human, DiscType::T), // disc is just a default, can be changed
             player2: Player::new(player2_type, DiscType::O), // disc is just a default, can be changed
             current_player: 1,
-            game_type: GameType::TOOTandOTTO
+            game_type: GameType::TOOTandOTTO,
+            turns: 0,
+            status: GameEvent::Ongoing
         }
     }
 
@@ -118,8 +124,14 @@ impl BoardGame {
         } else if self.game_type == GameType::TOOTandOTTO {
             let event = self.game_board.is_toot_or_otto();
             match event {
-                GameEvent::IsTOOT => return GameEvent::Player1Win(row),
-                GameEvent::IsOTTO => return GameEvent::Player2Win(row),
+                GameEvent::IsTOOT => {
+                    self.status = GameEvent::Player1Win(row);
+                    return GameEvent::Player1Win(row),
+                }
+                GameEvent::IsOTTO => {
+                    self.status = GameEvent::Player2Win(row);
+                    return GameEvent::Player2Win(row),
+                }
                 _ => {}
             }
         }
