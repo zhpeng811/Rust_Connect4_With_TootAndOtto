@@ -13,11 +13,12 @@ Or you can do it in one-shot with
 ### To Run MongoDB backend
 1. Make sure MongoDB is installed on your machine, detail of installation can be found [here](https://docs.mongodb.com/manual/installation/)
 2. Then ensure MongoDB is running on the default port (27017).
-3. The backend uses (rocket)[https://github.com/SergioBenitez/Rocket/tree/v0.4], which requires Rust nightly to compile, if you're not using Rust nightly, you can perform the switch by using 
+3. The backend uses [rocket](https://github.com/SergioBenitez/Rocket/tree/v0.4), which requires Rust nightly to compile, if you're not using Rust nightly, you can perform the switch by using 
 ```
 rustup override set nightly
 ```
 **Make sure the above command is performed at the root directory of this project**
+
 4. Run the backend by switching to the `backend` folder and use
 ```
 cargo run
