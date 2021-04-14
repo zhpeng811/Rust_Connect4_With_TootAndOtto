@@ -5,7 +5,8 @@ use std::fmt::Display;
 pub struct Board {
     board_rows: usize,
     board_columns: usize,
-    board: Vec<Vec<DiscType>>
+    board: Vec<Vec<DiscType>>,
+    moves: Vec<(usize,usize)>
 }
 
 impl Board {
@@ -15,6 +16,14 @@ impl Board {
             board_columns,
             board: vec![vec![DiscType::Empty; board_columns]; board_rows]
         }
+    }
+
+    pub fn undo_last(&mut self) {
+        self.moves.pop();
+    }
+
+    pub fn get_col(&mut self) -> usize{
+        return self.board_columns;
     }
 
     /// Arg: 
@@ -30,12 +39,17 @@ impl Board {
         for i in (0..self.board_rows).rev() {
             if self.board[i][column] == DiscType::Empty {
                 self.board[i][column] = disc_type;
+                self.moves.push((i,column));
                 return GameEvent::PlaceSuccess(i as usize);
             }
         }
 
         // should never reach here
         GameEvent::UnexpectedErr
+    }
+
+    pub fn clear_board(&mut self) {
+        self.board = vec![vec![DiscType::Empty; board_columns]; board_rows];
     }
 
     pub fn is_full(&self) -> bool {
