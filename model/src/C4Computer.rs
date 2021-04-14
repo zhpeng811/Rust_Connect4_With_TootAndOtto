@@ -51,6 +51,7 @@ pub fn evaluate_board(game: &mut BoardGame, ai: AIConfig) -> (isize, isize) {
         game.game_board.undo_last();
         score
     }
+
 }
 
 fn mc_search(game: &mut BoardGame, ai: AIConfig) -> isize {
