@@ -1,80 +1,29 @@
-## Ignore the wasm default
-
+### To Run the web frontend
 To run, install [trunk](https://crates.io/crates/trunk).
 **Make sure to run `cargo install wasm-bindgen-cli` in the instructions.**
-Then ensure MongoDB is running on the default port (27017).
 
-To run the code just use
+To run the code, switch to the `web/` folder and just use
 ```
 trunk serve
 ```
-
-<div align="center">
-
-  <h1><code>wasm-pack-template</code></h1>
-
-  <strong>A template for kick starting a Rust and WebAssembly project using <a href="https://github.com/rustwasm/wasm-pack">wasm-pack</a>.</strong>
-
-  <p>
-    <a href="https://travis-ci.org/rustwasm/wasm-pack-template"><img src="https://img.shields.io/travis/rustwasm/wasm-pack-template.svg?style=flat-square" alt="Build Status" /></a>
-  </p>
-
-  <h3>
-    <a href="https://rustwasm.github.io/docs/wasm-pack/tutorials/npm-browser-packages/index.html">Tutorial</a>
-    <span> | </span>
-    <a href="https://discordapp.com/channels/442252698964721669/443151097398296587">Chat</a>
-  </h3>
-
-  <sub>Built with 🦀🕸 by <a href="https://rustwasm.github.io/">The Rust and WebAssembly Working Group</a></sub>
-</div>
-
-## About
-
-[**📚 Read this template tutorial! 📚**][template-docs]
-
-This template is designed for compiling Rust libraries into WebAssembly and
-publishing the resulting package to NPM.
-
-Be sure to check out [other `wasm-pack` tutorials online][tutorials] for other
-templates and usages of `wasm-pack`.
-
-[tutorials]: https://rustwasm.github.io/docs/wasm-pack/tutorials/index.html
-[template-docs]: https://rustwasm.github.io/docs/wasm-pack/tutorials/npm-browser-packages/index.html
-
-## 🚴 Usage
-
-### 🐑 Use `cargo generate` to Clone this Template
-
-[Learn more about `cargo generate` here.](https://github.com/ashleygwilliams/cargo-generate)
-
+Or you can do it in one-shot with
 ```
-cargo generate --git https://github.com/rustwasm/wasm-pack-template.git --name my-project
-cd my-project
+(cd frontend && trunk serve)
 ```
-
-### 🛠️ Build with `wasm-pack build`
-
+### To Run MongoDB backend
+1. Make sure MongoDB is installed on your machine, detail of installation can be found [here](https://docs.mongodb.com/manual/installation/)
+2. Then ensure MongoDB is running on the default port (27017).
+3. The backend uses (rocket)[https://github.com/SergioBenitez/Rocket/tree/v0.4], which requires Rust nightly to compile, if you're not using Rust nightly, you can perform the switch by using 
 ```
-wasm-pack build
+rustup override set nightly
 ```
-
-### 🔬 Test in Headless Browsers with `wasm-pack test`
-
+**Make sure the above command is performed at the root directory of this project**
+4. Run the backend by switching to the `backend` folder and use
 ```
-wasm-pack test --headless --firefox
+cargo run
 ```
-
-### 🎁 Publish to NPM with `wasm-pack publish`
-
+Or you can also do it in one-shot with
 ```
-wasm-pack publish
+(cd backend && cargo run)
 ```
-
-## 🔋 Batteries Included
-
-* [`wasm-bindgen`](https://github.com/rustwasm/wasm-bindgen) for communicating
-  between WebAssembly and JavaScript.
-* [`console_error_panic_hook`](https://github.com/rustwasm/console_error_panic_hook)
-  for logging panic messages to the developer console.
-* [`wee_alloc`](https://github.com/rustwasm/wee_alloc), an allocator optimized
-  for small code size.
+A rocket will be launched at `127.0.0.1:8000`, opening that URL is not necessary (there is nothing at that URL), the URL is used to serve HTTP `POST` and `GET` requests
