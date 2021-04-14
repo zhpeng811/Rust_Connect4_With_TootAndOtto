@@ -26,7 +26,8 @@ pub struct BoardGame {
     pub player1: Player,
     pub player2: Player,
     pub current_player: usize,
-    pub game_type: GameType
+    pub game_type: GameType,
+    pub turns: isize
 }
 
 impl BoardGame {
@@ -56,10 +57,16 @@ impl BoardGame {
 
     fn switch_turn(&mut self) {
         if self.current_player == 1 {
+            turns+=1;
             self.current_player = 2
         } else {
+            turns+=1;
             self.current_player = 1
         }
+    }
+
+    pub fn get_turns(&mut self) {
+        return self.turns;
     }
 
     fn get_current_disc_type(&self) -> DiscType {
@@ -68,6 +75,10 @@ impl BoardGame {
         } else {
             self.player2.disc_type
         }
+    }
+
+    pub fn get_col(&mut self) -> usize{
+        return self.game_board.get_col();
     }
 
     // for TOOT and OTTO

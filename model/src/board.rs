@@ -17,6 +17,10 @@ impl Board {
         }
     }
 
+    pub fn get_col(&mut self) -> usize{
+        return self.board_columns;
+    }
+
     /// Arg: 
     ///     column: the column of the player that wants to place the disc
     ///     disc_type: the type of the disc to place
@@ -36,6 +40,10 @@ impl Board {
 
         // should never reach here
         GameEvent::UnexpectedErr
+    }
+
+    pub fn clear_board(&mut self) {
+        self.board = vec![vec![DiscType::Empty; board_columns]; board_rows];
     }
 
     pub fn is_full(&self) -> bool {
