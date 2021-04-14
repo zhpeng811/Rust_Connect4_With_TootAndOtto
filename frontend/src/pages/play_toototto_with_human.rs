@@ -7,14 +7,14 @@ pub enum Msg {
     SetPlayer2Name(String),
 }
 
-pub struct PlayConnect4WithHuman {
+pub struct PlayTOOTOTTOWithHuman {
     player1_name: String,
     player2_name: String,
     link: ComponentLink<Self>,
     disable_input: bool
 }
 
-impl Component for PlayConnect4WithHuman {
+impl Component for PlayTOOTOTTOWithHuman {
     type Message = Msg;
     type Properties = ();
 

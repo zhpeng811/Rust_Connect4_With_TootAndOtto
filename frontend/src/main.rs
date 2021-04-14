@@ -12,6 +12,9 @@ use pages::{
     connect_4_app::Home, 
     how_to_connect_4::HowToConnect4,
     play_connect_4_with_human::PlayConnect4WithHuman,
+    play_connect_4_with_computer::PlayConnect4WithComputer,
+    play_toototto_with_computer::PlayTOOTOTTOWithComputer,
+    play_toototto_with_human::PlayTOOTOTTOWithHuman,
     how_to_toot::HowToToot, 
     game_history::GameHistory,
     score_board::ScoreBoard,
@@ -91,16 +94,22 @@ impl Model {
                     <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::HowToConnect4>
                         {"How to Play Connect4"}
                     </AppAnchor>
-                    <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::PlayConnect4WithHuman>
-                        {"Play Connect4 With Computer"}
+                    <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::PlayConnect4WithComputer>
+                        {"Play Connect4 with Computer"}
                     </AppAnchor>
-                    <a href="#/Connect4Human" class="w3-padding w3-hover-white">{"Play Connect4 with Another Human"}</a>
+                    <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::PlayConnect4WithHuman>
+                        {"Play Connect4 with Another Human"}
+                    </AppAnchor>
                     <br/>
                     <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::HowToToot>
                         {"How to Play TOOT-OTTO"}
                     </AppAnchor>
-                    <a href="#/TootOttoComputer" class="w3-padding w3-hover-white">{"Play Toot-Otto With Computer"}</a>
-                    <a href="#/TootOttoHuman" class="w3-padding w3-hover-white">{"Play Toot-Otto With Another Human"}</a>
+                    <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::PlayTOOTOTTOWithComputer>
+                        {"Play Toot-Otto With Computer"}
+                    </AppAnchor>
+                    <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::PlayTOOTOTTOWithHuman>
+                        {"Play Toot-Otto With Another Human"}
+                    </AppAnchor>
                     <br/>
                     <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::GameHistory>
                         {"View Game History"}
@@ -113,7 +122,7 @@ impl Model {
                 // <!-- Top menu on small screens -->
                 <header class="w3-container w3-top w3-hide-large w3-red w3-xlarge w3-padding">
                     <a href="javascript:void(0)" class="w3-btn w3-red w3-border w3-border-white w3-margin-right">{"&#9776;"}</a>
-                    <span>{"Connect 4 with MEAN"}</span>
+                    <span>{"Connect 4 with Rust"}</span>
                 </header>
 
                 // <!-- Overlay effect when opening sidenav on small screens -->
@@ -130,11 +139,20 @@ impl Model {
             AppRoute::HowToConnect4 => {
                 html! { <HowToConnect4 /> }
             }
+            AppRoute::PlayConnect4WithComputer => {
+                html! { <PlayConnect4WithComputer /> }
+            }
             AppRoute::PlayConnect4WithHuman => {
-                html! { <PlayConnect4WithHuman/> }
+                html! { <PlayConnect4WithHuman /> }
             }
             AppRoute::HowToToot => {
                 html! { <HowToToot /> }
+            }
+            AppRoute::PlayTOOTOTTOWithComputer => {
+                html! { <PlayTOOTOTTOWithComputer /> }
+            }
+            AppRoute::PlayTOOTOTTOWithHuman => {
+                html! { <PlayTOOTOTTOWithHuman /> }
             }
             AppRoute::GameHistory => {
                 html! { <GameHistory /> }

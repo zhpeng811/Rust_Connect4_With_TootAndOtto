@@ -8,10 +8,16 @@ use yew_router::{components::RouterAnchor, prelude::*, switch::Permissive};
 pub enum AppRoute {
     #[to = "/how-to-connect-4"]
     HowToConnect4,
+    #[to = "/play-connect-4-with-computer"]
+    PlayConnect4WithComputer,
     #[to = "/play-connect-4-with-human"]
     PlayConnect4WithHuman,
     #[to = "/how-to-toot"]
     HowToToot,
+    #[to = "/play-toototto-with-computer"]
+    PlayTOOTOTTOWithComputer,
+    #[to = "/play-toototto-with-human"]
+    PlayTOOTOTTOWithHuman,
     #[to = "/game-history"]
     GameHistory,
     #[to = "/score-board"]

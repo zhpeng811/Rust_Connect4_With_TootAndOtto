@@ -3,25 +3,24 @@ use crate::pages::text_input::TextInput;
 
 pub enum Msg {
     StartGame,
-    SetPlayer1Name(String),
-    SetPlayer2Name(String),
+    SetPlayer1Name(String)
 }
 
-pub struct PlayConnect4WithHuman {
+pub struct PlayConnect4WithComputer {
     player1_name: String,
     player2_name: String,
     link: ComponentLink<Self>,
     disable_input: bool
 }
 
-impl Component for PlayConnect4WithHuman {
+impl Component for PlayConnect4WithComputer {
     type Message = Msg;
     type Properties = ();
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             player1_name: String::from(""),
-            player2_name: String::from(""),
+            player2_name: String::from("Computer"),
             link,
             disable_input: false
         }
@@ -39,10 +38,6 @@ impl Component for PlayConnect4WithHuman {
                 self.player1_name = name;
                 false
             }
-            Msg::SetPlayer2Name(name) => {
-                self.player2_name = name;
-                false
-            }
         }
     }
 
@@ -53,18 +48,13 @@ impl Component for PlayConnect4WithHuman {
     fn view(&self) -> Html {
         html! {
             <div class="w3-container" id="services" style="margin-top:75px">
-                <h5 class="w3-xxxlarge w3-text-red"><b>{"Enter Player Names"}</b></h5>
+                <h5 class="w3-xxxlarge w3-text-red"><b>{"Enter Your Name"}</b></h5>
                 <hr style="width:50px;border:5px solid red" class="w3-round"/>
 
                 <div class="col-md-offset-3 col-md-8">
                     <TextInput 
                         value = self.player1_name.clone()
                         oninput = self.link.callback(Msg::SetPlayer1Name)
-                        disabled = self.disable_input
-                    />
-                    <TextInput 
-                        value = self.player2_name.clone()
-                        oninput = self.link.callback(Msg::SetPlayer2Name)
                         disabled = self.disable_input
                     />
                     <button 
