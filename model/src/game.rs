@@ -5,9 +5,9 @@ pub use crate::board::Board;
 
 pub enum GameEvent {
     PlaceSuccess(usize),
-    Player1Win(usize),
-    Player2Win(usize),
-    Draw(usize),
+    Player1Win,
+    Player2Win,
+    Draw,
     IsTOOT,
     IsOTTO,
     Neither,
@@ -88,36 +88,37 @@ impl BoardGame {
     }
 
     pub fn place_disc(&mut self, column: usize) -> GameEvent {
-        let game_event = self.game_board.place_disc(column, self.get_current_disc_type());
-        match game_event {
-            GameEvent::PlaceSuccess(row) => {
-                self.check(row)
-            },
-            _ => return game_event
-        }
+        self.game_board.place_disc(column, self.get_current_disc_type())
+        // let game_event = self.game_board.place_disc(column, self.get_current_disc_type());
+        // match game_event {
+        //     GameEvent::PlaceSuccess() => {
+        //         self.check()
+        //     },
+        //     _ => return game_event
+        // }
     }
 
-    fn check(&mut self, row: usize) -> GameEvent {
+    pub fn check(&mut self) -> GameEvent {
         if self.game_type == GameType::Connect4 && self.game_board.is_connect4(self.get_current_disc_type()) {
             if self.current_player == 1 {
-                return GameEvent::Player1Win(row)
+                return GameEvent::Player1Win
             } else {
-                return GameEvent::Player2Win(row)
+                return GameEvent::Player2Win
             }
         } else if self.game_type == GameType::TOOTandOTTO {
             let event = self.game_board.is_toot_or_otto();
             match event {
-                GameEvent::IsTOOT => return GameEvent::Player1Win(row),
-                GameEvent::IsOTTO => return GameEvent::Player2Win(row),
+                GameEvent::IsTOOT => return GameEvent::Player1Win,
+                GameEvent::IsOTTO => return GameEvent::Player2Win,
                 _ => {}
             }
         }
 
         if self.game_board.is_full() {
-            return GameEvent::Draw(row)
+            return GameEvent::Draw
         } else {
             self.switch_turn();
-            return GameEvent::PlaceSuccess(row)
+            return GameEvent::PlaceSuccess(0)
         }
     }
 }

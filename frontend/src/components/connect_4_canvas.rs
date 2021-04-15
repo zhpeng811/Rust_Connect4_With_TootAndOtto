@@ -30,7 +30,7 @@ pub struct CanvasModel {
     canvas: Option<CanvasElement>,
     ctx: Option<CanvasRenderingContext2d>,
     cbk: Callback<ClickEvent>,
-    animate_cbk: Callback<(usize, i64, usize, usize, bool)>,
+    animate_cbk: Callback<(usize, usize, usize, usize, bool)>,
     game: BoardGame,
     won: bool,
     paused: bool,
@@ -50,7 +50,7 @@ pub struct Props {
 
 pub enum Message {
     Click(ClickEvent),
-    AnimateCallback((usize, i64, usize, usize, bool)),
+    AnimateCallback((usize, usize, usize, usize, bool)),
     Ignore,
 }
 
@@ -109,13 +109,13 @@ impl CanvasModel {
     }
 
     pub fn draw(&self) {
-        for y in 0..6 {
-            for x in 0..7 {
+        for x in 0..7 {
+            for y in 0..6 {
                 let mut fg_color = "transparent";
                 let board = self.game.game_board.board.clone();
-                if board[x][y] == DiscType::Red {
+                if board[y][x] == DiscType::Red {
                     fg_color = "#ff4136";
-                } else if board[x][y] == DiscType::Yellow {
+                } else if board[y][x] == DiscType::Yellow {
                     fg_color = "#ffff00";
                 }
                 self.draw_circle(
@@ -142,18 +142,34 @@ impl CanvasModel {
         return ((coord - x) * (coord - x) <= radius * radius);
     }
 
+    pub fn check(&mut self) {
+        match self.game.check() {
+            GameEvent::Player1Win => {
+                self.record_match(1);
+            },
+            GameEvent::Player2Win => {
+                self.record_match(2);
+            },
+            GameEvent::Draw => {
+                self.record_match(0);
+            },
+            _ => return
+        }
+    }
+
     pub fn animate(
         &mut self,
         column: usize,
-        current_move: i64,
+        current_player: usize,
         to_row: usize,
         cur_pos: usize,
         mode: bool,
     ) {
+        log::info!("animating {}", to_row);
         let mut fg_color = "transparent";
-        if current_move >= 1 {
+        if current_player == 1 {
             fg_color = "#ff4136";
-        } else if current_move <= -1 {
+        } else if current_player == 2 {
             fg_color = "#ffff00";
         }
 
@@ -171,10 +187,11 @@ impl CanvasModel {
 
             let cloned = self.animate_cbk.clone();
             window().request_animation_frame(enclose!((cloned) move |_| {
-                cloned.emit((column, current_move, to_row, cur_pos+25, mode));
+                cloned.emit((column, current_player, to_row, cur_pos+25, mode));
             }));
         } else {
             self.draw();
+            self.check();
             self.reject_click = false;
         }
     }
@@ -183,7 +200,71 @@ impl CanvasModel {
         if self.paused || self.won {
             return 0;
         }
-        return 1;
+
+        match self.game.place_disc(column) {
+            GameEvent::PlaceSuccess(row) => {
+                self.animate(column, self.game.current_player, row, 0, mode);
+                self.paused = true;
+                return 1
+            },
+            _ => return 0
+        }
+    }
+
+    pub fn record_match(&mut self, winner: usize) {
+        self.paused = true;
+        self.won = true;
+        self.reject_click = false;
+        let mut msg = String::new();
+        if winner == 1 {
+            msg = format!("{} wins", self.props.player1.as_ref().unwrap());
+        } else if winner == 2 {
+            msg = format!("{} wins", self.props.player2.as_ref().unwrap());
+        } else {
+            msg = "It's a draw".to_string();
+        }
+
+        let to_print = format!("{} - Click on game board to reset", msg);
+
+        self.ctx.as_ref().unwrap().save();
+        self.ctx.as_ref().unwrap().set_font("14pt sans-serif");
+        self.ctx.as_ref().unwrap().set_fill_style_color("#111");
+        self.ctx
+            .as_ref()
+            .unwrap()
+            .fill_text(&to_print, 150.0, 20.0, None);
+
+        let game = HistoryInfo {
+            game_type: String::from("Connect-4"),
+            player1: self.props.player1.as_ref().unwrap().clone(),
+            player2: self.props.player2.as_ref().unwrap().clone(),
+            winner: if winner == 1 {
+                self.props.player1.as_ref().unwrap().clone()
+            } else if winner == 2 {
+                self.props.player2.as_ref().unwrap().clone()
+            } else {
+                String::from("Draw")
+            },
+            time_played: Date::from_time(Date::now()).to_string(),
+        };
+
+        // construct callback
+        let callback = self
+            .link
+            .callback(move |response: Response<Result<String, Error>>| {
+                Message::Ignore
+            });
+
+        // construct request
+        let request = Request::post("/games")
+            .header("Content-Type", "application/json")
+            .body(Json(&game))
+            .unwrap();
+
+        // send the request
+        self.fetch_task = FetchService::fetch(request, callback).ok();
+
+        self.ctx.as_ref().unwrap().restore();
     }
 }
 
@@ -202,7 +283,7 @@ impl Component for CanvasModel {
             ctx: None,
             cbk: link.callback(|e: ClickEvent| Message::Click(e)),
             animate_cbk: link
-                .callback(|e: (usize, i64, usize, usize, bool)| Message::AnimateCallback(e)),
+                .callback(|e: (usize, usize, usize, usize, bool)| Message::AnimateCallback(e)),
             game,
             paused: false,
             won: false,
@@ -231,7 +312,7 @@ impl Component for CanvasModel {
                 for j in 0..7 {
                     if self.on_region(x, (75 * j + 100) as f64, 25 as f64) {
                         self.paused = false;
-
+                        log::info!("clicked column {}", j);
                         let valid = self.action(j, false);
                         if valid == 1 {
                             self.reject_click = true;
