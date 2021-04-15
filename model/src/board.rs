@@ -2,6 +2,7 @@ pub use crate::disc::DiscType;
 pub use crate::game::GameEvent;
 use std::fmt::Display;
 
+#[derive(Clone, Debug)]
 pub struct Board {
     pub board_rows: usize,
     pub board_columns: usize,
@@ -30,7 +31,7 @@ impl Board {
         for i in (0..self.board_rows).rev() {
             if self.board[i][column] == DiscType::Empty {
                 self.board[i][column] = disc_type;
-                return GameEvent::PlaceSuccess(i as usize);
+                return GameEvent::PlaceSuccess
             }
         }
 
@@ -47,6 +48,17 @@ impl Board {
         }
 
         count == self.board_rows
+    }
+
+    pub fn get_valid_columns(&self) -> Vec<usize> {
+        let mut result: Vec<usize> = Vec::new();
+        for i in 0..self.board_columns {
+            if self.board[0][i] == DiscType::Empty {
+                result.push(i);
+            }
+        }
+
+        result
     }
 
     pub fn is_connect4(&self, check_disc_type: DiscType) -> bool {

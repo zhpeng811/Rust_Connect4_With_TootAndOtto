@@ -4,7 +4,7 @@ pub use crate::player::{Player, PlayerType};
 pub use crate::board::Board;
 
 pub enum GameEvent {
-    PlaceSuccess(usize),
+    PlaceSuccess,
     Player1Win,
     Player2Win,
     Draw,
@@ -15,7 +15,7 @@ pub enum GameEvent {
     UnexpectedErr,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum GameType {
     Connect4,
     TOOTandOTTO
@@ -30,6 +30,7 @@ impl ToString for GameType {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct BoardGame {
     pub game_board: Board,
     pub player1: Player,
@@ -96,13 +97,6 @@ impl BoardGame {
 
     pub fn place_disc(&mut self, column: usize) -> GameEvent {
         self.game_board.place_disc(column, self.get_current_disc_type())
-        // let game_event = self.game_board.place_disc(column, self.get_current_disc_type());
-        // match game_event {
-        //     GameEvent::PlaceSuccess() => {
-        //         self.check()
-        //     },
-        //     _ => return game_event
-        // }
     }
 
     pub fn check(&mut self) -> GameEvent {
@@ -125,7 +119,7 @@ impl BoardGame {
             return GameEvent::Draw
         } else {
             self.switch_turn();
-            return GameEvent::PlaceSuccess(0)
+            return GameEvent::PlaceSuccess
         }
     }
 }
