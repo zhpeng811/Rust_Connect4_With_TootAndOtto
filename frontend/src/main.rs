@@ -20,6 +20,8 @@ use pages::{
 mod switch;
 use switch::{AppAnchor, AppRoute, AppRouter, PublicUrlSwitch};
 
+mod components;
+
 pub enum Msg {
     ToggleNavbar,
 }
@@ -94,7 +96,9 @@ impl Model {
                     <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::PlayConnect4WithHuman>
                         {"Play Connect4 With Computer"}
                     </AppAnchor>
-                    <a href="#/Connect4Human" class="w3-padding w3-hover-white">{"Play Connect4 with Another Human"}</a>
+                    <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::PlayConnect4WithHuman>
+                        {"Play Connect4 With Another Human"}
+                    </AppAnchor>
                     <br/>
                     <AppAnchor classes="w3-padding w3-hover-white" route=AppRoute::HowToToot>
                         {"How to Play TOOT-OTTO"}
@@ -131,7 +135,7 @@ impl Model {
                 html! { <HowToConnect4 /> }
             }
             AppRoute::PlayConnect4WithHuman => {
-                html! { <PlayConnect4WithHuman/> }
+                html! { <PlayConnect4WithHuman /> }
             }
             AppRoute::HowToToot => {
                 html! { <HowToToot /> }

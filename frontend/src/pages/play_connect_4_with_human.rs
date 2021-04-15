@@ -1,8 +1,11 @@
 use yew::prelude::*;
 use crate::pages::text_input::TextInput;
+use crate::components::connect_4_canvas::CanvasModel;
+use crate::components::ai_difficulty::Difficulty::Easy;
 
 pub enum Msg {
     StartGame,
+    EndGame,
     SetPlayer1Name(String),
     SetPlayer2Name(String),
 }
@@ -10,6 +13,9 @@ pub enum Msg {
 pub struct PlayConnect4WithHuman {
     player1_name: String,
     player2_name: String,
+    game_running: bool,
+    disable_button: bool,
+    display_board: String,
     link: ComponentLink<Self>,
 }
 
@@ -21,6 +27,9 @@ impl Component for PlayConnect4WithHuman {
         Self {
             player1_name: String::from(""),
             player2_name: String::from(""),
+            game_running: false,
+            disable_button: false,
+            display_board: String::from("none"),
             link,
         }
     }
@@ -30,17 +39,23 @@ impl Component for PlayConnect4WithHuman {
             Msg::StartGame => {
                 log::info!("Player 1 name: {}", self.player1_name);
                 log::info!("Player 2 name: {}", self.player2_name);
-                true
+                self.game_running = true;
+                self.disable_button = true;
+                self.display_board = String::from("block");
             }
             Msg::SetPlayer1Name(name) => {
                 self.player1_name = name;
-                false
             }
             Msg::SetPlayer2Name(name) => {
                 self.player2_name = name;
-                false
             }
-        }
+            Msg::EndGame => {
+                self.game_running = false;
+                self.disable_button = false;
+                self.display_board = String::from("none");
+            }
+        };
+        true
     }
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
@@ -56,18 +71,35 @@ impl Component for PlayConnect4WithHuman {
                 <div class="col-md-offset-3 col-md-8">
                     <TextInput 
                         value = self.player1_name.clone()
+                        placeholder = "Player 1's Name"
                         oninput = self.link.callback(Msg::SetPlayer1Name)
                     />
                     <TextInput 
                         value = self.player2_name.clone()
+                        placeholder = "Player 1's Name"
                         oninput = self.link.callback(Msg::SetPlayer2Name)
                     />
-                    <button onclick= self.link.callback(|_| Msg::StartGame)>{"Start Game"}</button>
+                    <button
+                        id = "start-button"
+                        onclick= self.link.callback(|_| Msg::StartGame)
+                        disabled = {self.disable_button}
+                    >
+                        {"Start Game"}
+                    </button>
                 </div>
-                
-                <canvas id="gameboard" height="480" width="640"></canvas>
+                <div style=format!("display: {}", self.display_board)>
+                    <br/>
+                    <h4>{format!("New Game: {} Vs {}", self.player1_name, self.player2_name)}</h4>
+                    <small>{format!("(Disc Colors: {} - ", self.player1_name)} <b>{"Red"}</b> {format!("   and    {} - ", self.player2_name)} <b>{"Yellow)"}</b></small>
+                    <br/>
+                    <CanvasModel:
+                        canvas_id = "connect_human"
+                        player1 = self.player1_name.clone()
+                        player2 = self.player2_name.clone()
+                        difficulty = Easy
+                        game_done_cbk=self.link.callback(|_| Msg::EndGame)/>
+                </div>
             </div>
-                
         }
     }
 }

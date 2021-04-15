@@ -48,18 +48,22 @@ fn main() {
             match line.trim().parse::<usize>() {
                 Ok(column) => {
                     match game.place_disc(column) {
-                        GameEvent::PlaceSuccess(row) => {},
-                        GameEvent::Draw(row) => {
-                            println!("Game Draw!");
-                            break;
-                        }
-                        GameEvent::Player1Win(row) => {
-                            println!("Player 1 Win!");
-                            break;
-                        },
-                        GameEvent::Player2Win(row) => {
-                            println!("Player 2 Win!");
-                            break;
+                        GameEvent::PlaceSuccess(row) => {
+                            match game.check() {
+                                GameEvent::Draw => {
+                                    println!("Game Draw!");
+                                    break;
+                                }
+                                GameEvent::Player1Win => {
+                                    println!("Player 1 Win!");
+                                    break;
+                                },
+                                GameEvent::Player2Win => {
+                                    println!("Player 2 Win!");
+                                    break;
+                                },
+                                _ => return
+                            }
                         },
                         _ => println!("column is full, try again")
                     }
