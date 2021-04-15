@@ -119,7 +119,7 @@ impl Component for GameHistory {
                         <th>{"Player1"}</th>
                         <th>{"Player2"}</th>
                         <th>{"Winner"}</th>
-                        <th>{"When Played"}</th>
+                        <th>{"When Played (UTC Time)"}</th>
                     </tr>
 
                     { self.view_history() }

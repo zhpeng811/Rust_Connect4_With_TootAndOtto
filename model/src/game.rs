@@ -21,6 +21,15 @@ pub enum GameType {
     TOOTandOTTO
 }
 
+impl ToString for GameType {
+    fn to_string(&self) -> String {
+        match self {
+            GameType::Connect4 => String::from("Connect-4"),
+            GameType::TOOTandOTTO => String::from("TOOT-OTTO")
+        }
+    }
+}
+
 pub struct BoardGame {
     pub game_board: Board,
     pub player1: Player,
@@ -71,20 +80,18 @@ impl BoardGame {
     }
 
     // for TOOT and OTTO
-    pub fn switch_disc_type(&mut self) {
+    pub fn change_disc_type(&mut self, disc_type: DiscType) {
         let player: &mut Player;
 
-        if self.current_player == 1 {
-            player = &mut self.player1;
-        } else {
-            player = &mut self.player2;
+        if (self.game_type == GameType::Connect4) {
+            // not allowed to chagne disc type for connect 4
+            // there should not be a GUI that allows this
+            return
         }
 
-        if player.disc_type == DiscType::T {
-            (*player).disc_type = DiscType::O;
-        } else {
-            (*player).disc_type = DiscType::T;
-        }
+        // due to GUI issues, changing a disc type will change for both players
+        self.player1.disc_type = disc_type;
+        self.player2.disc_type = disc_type;
     }
 
     pub fn place_disc(&mut self, column: usize) -> GameEvent {

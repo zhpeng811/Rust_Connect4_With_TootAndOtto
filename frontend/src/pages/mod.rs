@@ -1,7 +1,10 @@
 pub mod connect_4_app;
 pub mod how_to_connect_4;
 pub mod play_connect_4_with_human;
+pub mod play_connect_4_with_computer;
 pub mod how_to_toot;
+pub mod play_toototto_with_computer;
+pub mod play_toototto_with_human;
 pub mod game_history;
 pub mod score_board;
 pub mod page_not_found;

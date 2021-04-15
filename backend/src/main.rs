@@ -6,6 +6,8 @@ use std::path::{Path, PathBuf};
 use rocket::response::NamedFile;
 use mongodb::{Client, Collection, error::Error};
 use rocket::config::{Config, Environment};
+use rocket::http::Method;
+use rocket_cors::{AllowedHeaders, AllowedOrigins};
 
 mod database {
     use mongodb::Collection;
@@ -99,23 +101,39 @@ fn connect_to_collection() -> Result<Collection, Error> {
     Ok(collection)
 }
 
+// using rocket_cors crate example: https://github.com/lawliet89/rocket_cors/blob/master/examples/fairing.rs
 fn main() {
+    // This will allow the frontend to make HTTP GET and POST requests
+    // otherwise the request is rejected due to CORS error
+    let allowed_origins = AllowedOrigins::all();
+
+    let cors = rocket_cors::CorsOptions {
+        allowed_origins,
+        allowed_methods: vec![Method::Get, Method::Post].into_iter().map(From::from).collect(),
+        allowed_headers: AllowedHeaders::all(),
+        allow_credentials: true,
+        ..Default::default()
+    }.to_cors().unwrap();
+
     let result = connect_to_collection();
 
     match result {
         Ok(collection) => {
+            // making the address just "localhost" doesn't work for frontend
             let config = Config::build(Environment::Staging)
                 .address("127.0.0.1")
                 .port(8000)
                 .finalize()
                 .unwrap();
             
-            let rocket = rocket::custom(config).manage(collection).mount("/", routes![
-                index,
-                files,
-                database::get_histories,
-                database::insert_history
-            ]);
+            let rocket = rocket::custom(config).manage(collection)
+                .mount("/", routes![
+                    index,
+                    files,
+                    database::get_histories,
+                    database::insert_history
+                ])
+                .attach(cors);
             rocket.launch();
         },
         Err(err) => eprintln!("Failed to start backend: {}", err),

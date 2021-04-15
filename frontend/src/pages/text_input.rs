@@ -11,6 +11,7 @@ pub struct Props {
     pub value: String,
     pub placeholder: String,
     pub oninput: Callback<String>,
+    pub disabled: bool,
 }
 
 pub struct TextInput {
@@ -61,6 +62,7 @@ impl Component for TextInput {
                 value=&self.text
                 placeholder=&self.placeholder
                 oninput=self.link.callback(|e: InputData| Msg::SetText(e.value))
+                disabled = self.props.disabled
             />
         }
     }
