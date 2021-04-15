@@ -38,3 +38,13 @@ Or you can also do it in one-shot with
 (cd backend && cargo run)
 ```
 A rocket will be launched at `127.0.0.1:8000`, opening that URL is not necessary (there is nothing at that URL), the URL is used to serve HTTP `POST` and `GET` requests
+
+### To Run CLI version of the Game
+We also made an limited-feature, untested Command Line Interface(CLI) version of Connect 4 and TOOT-and-OTTO, if you don't want to install all the software to run `frontend` and `backend`, you can just run the CLI version directly to play the game by switching to the `model` folder and use:
+```
+cargo run
+```
+Again you can also do it in one-shot with
+```
+(cd model && cargo run)
+```
