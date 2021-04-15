@@ -138,7 +138,7 @@ impl CanvasModel {
                     if board[y][x] == DiscType::Red {
                         fg_color = "#ff4136";
                     } else if board[y][x] == DiscType::Yellow {
-                        fg_color = "#ffff00";
+                        fg_color = "#ffa500";
                     }
                 } else if self.game_type == GameType::TOOTandOTTO {
                     if board[y][x] == DiscType::T {
@@ -201,7 +201,7 @@ impl CanvasModel {
         if self.game.current_player == 1 && self.game_type == GameType::Connect4 {
             fg_color = "#ff4136";
         } else if self.game.current_player == 2 && self.game_type == GameType::Connect4 {
-            fg_color = "#ffff00";
+            fg_color = "#ffa500";
         } else if self.game_type == GameType::TOOTandOTTO {
             fg_color = "#99ffcc";
         }
