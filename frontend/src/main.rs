@@ -123,8 +123,7 @@ impl Model {
 
                 // <!-- Top menu on small screens -->
                 <header class="w3-container w3-top w3-hide-large w3-red w3-xlarge w3-padding">
-                    <a href="javascript:void(0)" class="w3-btn w3-red w3-border w3-border-white w3-margin-right">{"&#9776;"}</a>
-                    <span>{"Connect 4 with Rust"}</span>
+                    <div align="center"> {"Connect 4 with Rust"} </div>
                 </header>
 
                 // <!-- Overlay effect when opening sidenav on small screens -->
