@@ -52,7 +52,10 @@ impl Connect4AI {
 
     fn random_gen(&self, game_board: Board) -> usize {
         let valid_columns = game_board.get_valid_columns();
-        *valid_columns.choose(&mut thread_rng()).unwrap()
+        match valid_columns.choose(&mut thread_rng()) {
+            Some(column) => return *column,
+            None => return 0 // not gonna be used
+        }
     }
 
     pub fn find_best_move(&self, game: BoardGame) -> usize {
@@ -277,15 +280,19 @@ impl TootOttoAI {
     fn random_gen(&self, game_board: Board) -> (usize, DiscType) {
         let mut rng = thread_rng();
         let valid_columns = game_board.get_valid_columns();
-        let column = *valid_columns.choose(&mut rng).unwrap();
-        let disc_type = {
-            if rng.gen_range(0, 2) == 0 {
-                DiscType::T
-            } else {
-                DiscType::O
-            }
-        };
-        (column, disc_type)
+        match valid_columns.choose(&mut rng) {
+            Some(column) => {
+                let disc_type = {
+                    if rng.gen_range(0, 2) == 0 {
+                        DiscType::T
+                    } else {
+                        DiscType::O
+                    }
+                };
+                (*column, disc_type)
+            },
+            None => return (0, DiscType::Empty), // not gonna be used
+        }
     }
 
     pub fn find_best_move(&self, game: BoardGame) -> (usize, DiscType) {
