@@ -21,6 +21,7 @@ rustup target add wasm32-unknown-unknown
 ```
 
 ### To Run MongoDB backend
+Backend is used to get and store the histories of games, to run:
 1. Make sure MongoDB is installed on your machine, detail of installation can be found [here](https://docs.mongodb.com/manual/installation/)
 2. Then ensure MongoDB is running on the default port (27017).
 3. The backend uses [rocket](https://github.com/SergioBenitez/Rocket/tree/v0.4), which requires Rust nightly to compile, if you're not using Rust nightly, you can perform the switch by using 
