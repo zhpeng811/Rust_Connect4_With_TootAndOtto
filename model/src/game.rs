@@ -3,6 +3,7 @@ pub use crate::disc::DiscType;
 pub use crate::player::{Player, PlayerType};
 pub use crate::board::Board;
 
+#[derive(Clone)]
 pub enum GameEvent {
     PlaceSuccess(usize),
     Player1Win(usize),
@@ -16,19 +17,20 @@ pub enum GameEvent {
     Ongoing
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum GameType {
     Connect4,
     TOOTandOTTO
 }
 
+#[derive(Clone)]
 pub struct BoardGame {
     pub game_board: Board,
     pub player1: Player,
     pub player2: Player,
     pub current_player: usize,
     pub game_type: GameType,
-    pub turns: isize,
+    pub turns: usize,
     pub status: GameEvent
 }
 
@@ -61,37 +63,44 @@ impl BoardGame {
         }
     }
 
-    fn switch_turn(&mut self) {
-        if self.current_player == 1 {
-            turns+=1;
-            self.current_player = 2
-        } else {
-            turns+=1;
-            self.current_player = 1
-        }
+    
+    // pub fn get_board_rows(&self) -> usize {
+    //     self.game_board.get_num_rows()    
+    // }
+
+    // pub fn get_board_columns(&self) -> usize{
+    //     self.game_board.get_num_columns()
+    // }
+
+    pub fn get_turns(&self) -> usize {
+        self.turns
     }
 
-    pub fn get_turns(&mut self) {
-        return self.turns;
-    }
-
-    fn get_current_disc_type(&self) -> DiscType {
-        if self.current_player == 1 {
+    pub fn get_current_disc_type(&self) -> DiscType {
+        let current_player = 1 + self.turns % 2;
+        if current_player == 1 {
             self.player1.disc_type
         } else {
             self.player2.disc_type
         }
     }
 
-    pub fn get_col(&mut self) -> usize{
-        return self.game_board.get_col();
+    pub fn get_other_disc_type(&self) -> DiscType {
+        let current_player = 1 + self.turns % 2;
+        if current_player == 1 {
+            self.player2.disc_type
+        } else {
+            self.player1.disc_type
+        }
     }
+
 
     // for TOOT and OTTO
     pub fn switch_disc_type(&mut self) {
         let player: &mut Player;
 
-        if self.current_player == 1 {
+        let current_player = 1 + self.turns % 2;
+        if current_player == 1 {
             player = &mut self.player1;
         } else {
             player = &mut self.player2;
@@ -116,7 +125,8 @@ impl BoardGame {
 
     fn check(&mut self, row: usize) -> GameEvent {
         if self.game_type == GameType::Connect4 && self.game_board.is_connect4(self.get_current_disc_type()) {
-            if self.current_player == 1 {
+            let current_player = 1 + self.turns % 2;
+            if current_player == 1 {
                 return GameEvent::Player1Win(row)
             } else {
                 return GameEvent::Player2Win(row)
@@ -124,22 +134,16 @@ impl BoardGame {
         } else if self.game_type == GameType::TOOTandOTTO {
             let event = self.game_board.is_toot_or_otto();
             match event {
-                GameEvent::IsTOOT => {
-                    self.status = GameEvent::Player1Win(row);
-                    return GameEvent::Player1Win(row),
-                }
-                GameEvent::IsOTTO => {
-                    self.status = GameEvent::Player2Win(row);
-                    return GameEvent::Player2Win(row),
-                }
-                _ => {}
+                GameEvent::IsTOOT => return GameEvent::Player1Win(row),
+                GameEvent::IsOTTO => return GameEvent::Player2Win(row),
+                _ => ()
             }
         }
 
         if self.game_board.is_full() {
             return GameEvent::Draw(row)
         } else {
-            self.switch_turn();
+            self.turns += 1;
             return GameEvent::PlaceSuccess(row)
         }
     }

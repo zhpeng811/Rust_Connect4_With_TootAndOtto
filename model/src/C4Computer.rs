@@ -1,6 +1,8 @@
-use crate game::{GameEvent, BoardGame};
 use rand::prelude::*;
-
+use std::collections::HashMap;
+use crate::game::{BoardGame, GameEvent};
+use crate::board::{Board};
+use crate::disc::{DiscType};
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Difficulty {
     Easy,
@@ -8,115 +10,180 @@ pub enum Difficulty {
     Hard,
 }
 
-impl ToString for Difficulty {
-    fn to_string(&self) -> String {
-        match self {
-            Easy => String::from("Easy"),
-            Medium => String::from("Medium"),
-            Hard => String::from("Hard"),
+pub struct Connect4AI {
+    board_rows: usize,
+    board_columns: usize,
+    max_depth: usize,
+    difficulty: Difficulty,
+    alpha: isize,
+    beta: isize
+}
+
+// algorithm from the following implementation: https://github.com/KeithGalli/Connect4-Python/blob/master/connect4_with_ai.py
+impl Connect4AI {
+    pub fn new(board_rows: usize, board_columns: usize, difficulty: Difficulty) -> Self {
+        Self {
+            board_rows,
+            board_columns,
+            max_depth: 6,
+            difficulty,
+            alpha: std::isize::MIN,
+            beta: std::isize::MAX
         }
     }
-}
 
-pub struct AIConfig {
-    carlo_iter: isize,
-    minmax_depth: isize,
-}
-
-pub const EASY_AI: AIConfig = AIConfig {
-    carlo_iter: 5,
-    minmax_depth: 2,
-};
-
-pub const MID_AI: AIConfig = AIConfig {
-    carlo_iter: 1000,
-    minmax_depth: 4,
-};
-
-pub const HARD_AI: AIConfig = AIConfig {
-    carlo_iter: 4000,
-    minmax_depth: 6,
-};
-
-const MINMAX_SHIFT: isize = 14;
-
-pub fn evaluate_board(game: &mut BoardGame, ai: AIConfig) -> (isize, isize) {
-    let is_max = game.get_turns() % 2 == 0;
-    fn test_move(col: usize, game: &mut BoardGame, ai: AIConfig) -> isize {
-        game.place_disc(mov);
-        let mut score = minmax_search(game, ai.minmax_depth) << MINMAX_SHIFT;
-        if score == 0 {
-            score = mc_search(game, ai);
+    pub fn findMove(&self, game: &mut BoardGame) -> usize {
+        match self.difficulty {
+            Difficulty::Easy => {
+                let mut rng = rand::thread_rng();
+                return rng.gen_range(0, self.board_columns)
+            },
+            Difficulty::Medium => {
+                return self.minmax(game.game_board.clone(), self.max_depth, true).0
+            },
+            _ => return 4
         }
-        game.game_board.undo_last();
+    }
+
+    fn evaluate_window(&self, window: &Vec<DiscType>, disc_type: DiscType) -> isize {
+        let mut score: isize = 0;
+        let mut oppoent_type = DiscType::Red;
+        if disc_type == DiscType::Red {
+            oppoent_type = DiscType::Yellow;
+        }
+
+        let mut disc_count = 0;
+        let mut empty_count = 0;
+        let mut oppo_count = 0;
+        for i in 0..window.len() {
+            if window[i] == disc_type {
+                disc_count += 1;
+            } else if window[i] == DiscType::Empty {
+                empty_count += 1;
+            } else {
+                oppo_count += 1;
+            }
+        }
+
+        if disc_count >= 4 {
+            score += 100;
+        } else if disc_count == 3 && empty_count == 1 {
+            score += 5;
+        } else if disc_count == 2 {
+            score += 2;
+        } 
+
+        if oppo_count == 3 && empty_count == 1 {
+            score -= 4;
+        }
+
         score
     }
 
-}
-
-fn mc_search(game: &mut BoardGame, ai: AIConfig) -> isize {
-    let mut score = 0;
-    (0..ai.carlo_iter).for_each(|_| {
-        let mut moves = 0;
-        let mut result = GameEvent::Ongoing;
-        let mut finished = false;
-        while !finished {
-            if result == GameEvent::Ongoing {
-                let cols = game.get_col();
-                let col = random::<usize>() % cols;
-                let result = game.place_disc(col);
-            } else if result == GameEvent::Player1Win(row) || result == GameEvent::Player2Win(row){
-                score += 1;
-                finished = true;
-            } else if result == GameEvent::Draw(row) {
-                finished = true;
-            } else if result == GameEvent::PlaceColumnFull{
-                moves -= 1;
-                result = GameEvent::Ongoing;
+    fn score_position(&self, game_board: &Board, disc_type: DiscType) -> isize {
+        let mut center_count = 0;
+        for i in 0..self.board_rows {
+            if game_board.board[i][self.board_columns / 2] == disc_type {
+                center_count += 1;
             }
         }
-        for _ in 0..moves {
-            game.game_board.undo_last();
+        let mut score = center_count * 3;
+
+        for r in 0..self.board_rows {
+            let row_array = &game_board.board[r];
+            for c in 0..self.board_columns - 3 {
+                let mut window: Vec<DiscType> = Vec::new();
+                for i in 0..4 {
+                    window.push(row_array[c + i]);
+                }
+                score += self.evaluate_window(&window, disc_type);
+            }
         }
-    };
-    score
-}
 
-static mut COUNT: isize = 0;
-fn minmax(game: &mut BoardGame, depth: usize) -> isize {
-    unsafe {
-        COUNT += 1;
+        for c in 0..self.board_columns {
+            let mut col_array: Vec<DiscType> = Vec::new();
+            for i in 0..self.board_rows {
+                col_array.push(game_board.board[i][c]);
+            }
+            for r in 0..self.board_rows - 3 {
+                let mut window: Vec<DiscType> = Vec::new();
+                for i in 0..4 {
+                    window.push(col_array[r + i]);
+                }
+                score += self.evaluate_window(&window, disc_type);
+            }
+        }
+
+        for r in 0..self.board_rows - 3 {
+            for c in 0..self.board_columns - 3 {
+                let mut window: Vec<DiscType> = Vec::new();
+                for i in 0..4 {
+                    window.push(game_board.board[r + i][c + i]);
+                }
+                score += self.evaluate_window(&window, disc_type);
+            }
+        }
+
+        for r in 0..self.board_rows - 3 {
+            for c in 0..self.board_columns - 3 {
+                let mut window: Vec<DiscType> = Vec::new();
+                for i in 0..4 {
+                    window.push(game_board.board[r + 3 - i][c + i]);
+                }
+                score += self.evaluate_window(&window, disc_type);
+            }
+        }
+
+        score
     }
-    if depth == 0 {
-        return 0;
-    }
-    let is_max = game.get_turns() % 2 == 0;
 
-    if game.status == GameEvent::Player2Win {
-        return -(depth as isize);
-    }
-    if game.status == GameEvent::Player1Win {
-        return depth as isize;
-    }
+    fn minmax(&self, board: Board, depth: usize, is_ai: bool) -> (usize, isize) {
+        if board.is_connect4(DiscType::Red) {
+            return (66, std::isize::MIN)
+        } else if board.is_connect4(DiscType::Yellow) {
+            return (66, std::isize::MAX)
+        } else if board.is_full() {
+            return (66, 0)
+        } else if depth == 0 {
+            return (66, self.score_position(&board, DiscType::Yellow))
+        }
 
-
-    let minmax: fn(isize, isize) -> isize = if is_max { std::cmp::max } else { std::cmp::min };
-
-    let mut score = if is_max {
-        std::isize::MIN
-    } else {
-        std::isize::MAX
-    };
-
-    let cols = game.get_col();
-    for i in 0..cols {
-        let result = game.place_disc(i);
-        if result != GameEvent::PlaceColumnFull {
-            score = minmax(score, minmax_search(game, depth - 1));
-            game.game_board.undo_last();
+        let valid_columns = board.get_valid_columns();
+        if is_ai {
+            let mut score = std::isize::MIN;
+            let mut column: usize = *valid_columns.choose(&mut rand::thread_rng()).unwrap();
+            for col in valid_columns {
+                let mut clone_board = board.clone();
+                clone_board.place_disc(col, DiscType::Yellow);
+                let new_score = self.minmax(clone_board, depth - 1, !is_ai).1;
+                if new_score > score {
+                    score = new_score;
+                    column = col;
+                }
+                let alpha = std::cmp::max(self.alpha, score);
+                if alpha >= self.beta {
+                    break;
+                }
+            }
+            return (column, score)
+        } else {
+            let mut score = std::isize::MAX;
+            let mut column: usize = *valid_columns.choose(&mut rand::thread_rng()).unwrap();
+            for col in valid_columns {
+                let mut clone_board = board.clone();
+                clone_board.place_disc(col, DiscType::Red);
+                let new_score = self.minmax(clone_board, depth - 1, !is_ai).1;
+                if new_score < score {
+                    score = new_score;
+                    column = col;
+                }
+                let beta = std::cmp::min(self.beta, score);
+                if self.alpha >= beta {
+                    break;
+                }
+            }
+            return (column, score)
         }
     }
-    score
+
 }
-
-

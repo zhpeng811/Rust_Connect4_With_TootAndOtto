@@ -1,12 +1,12 @@
 pub use crate::disc::DiscType;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum PlayerType {
     Human,
     AI
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Player {
     pub player_type: PlayerType,
     pub disc_type: DiscType

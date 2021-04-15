@@ -2,11 +2,11 @@ pub use crate::disc::DiscType;
 pub use crate::game::GameEvent;
 use std::fmt::Display;
 
+#[derive(Clone)]
 pub struct Board {
     board_rows: usize,
     board_columns: usize,
-    board: Vec<Vec<DiscType>>,
-    moves: Vec<(usize,usize)>
+    pub board: Vec<Vec<DiscType>>
 }
 
 impl Board {
@@ -18,12 +18,40 @@ impl Board {
         }
     }
 
-    pub fn undo_last(&mut self) {
-        self.moves.pop();
+    pub fn get_num_rows(&self) -> usize {
+        self.board_rows
     }
 
-    pub fn get_col(&mut self) -> usize{
-        return self.board_columns;
+    pub fn get_num_columns(&self) -> usize {
+        self.board_columns
+    }
+
+    pub fn get_column_height(&self, column: usize) -> usize {
+        let mut count = 0;
+        for i in (0..self.board_rows).rev() {
+            if self.board[i][column] != DiscType::Empty {
+                count += 1;
+            } else {
+                break;
+            }
+        }
+
+        count
+    }
+
+    pub fn get_disc_at(&self, row: usize, column: usize) -> DiscType {
+        self.board[row][column]
+    }
+
+    pub fn get_valid_columns(&self) -> Vec<usize> {
+        let mut result: Vec<usize> = Vec::new();
+        for i in 0..self.board_columns {
+            if self.board[0][i] == DiscType::Empty {
+                result.push(i);
+            }
+        }
+
+        result
     }
 
     /// Arg: 
@@ -39,7 +67,7 @@ impl Board {
         for i in (0..self.board_rows).rev() {
             if self.board[i][column] == DiscType::Empty {
                 self.board[i][column] = disc_type;
-                self.moves.push((i,column));
+                // self.moves.push((i,column));
                 return GameEvent::PlaceSuccess(i as usize);
             }
         }
@@ -49,13 +77,13 @@ impl Board {
     }
 
     pub fn clear_board(&mut self) {
-        self.board = vec![vec![DiscType::Empty; board_columns]; board_rows];
+        self.board = vec![vec![DiscType::Empty; self.board_columns]; self.board_rows];
     }
 
     pub fn is_full(&self) -> bool {
         let mut count = 0;
         for i in 0..self.board_columns {
-            if self.board[0][i] != DiscType::Empty {
+            if self.is_column_full(i as usize) {
                 count += 1;
             }
         }
@@ -63,7 +91,25 @@ impl Board {
         count == self.board_rows
     }
 
+    pub fn is_column_full(&self, column: usize) -> bool {
+        self.board[0][column] != DiscType::Empty
+    }
+
+    pub fn count_non_empty(&self) -> usize {
+        let mut count = 0;
+        for i in 0..self.board_rows {
+            for j in 0..self.board_columns {
+                if self.board[i][j] != DiscType::Empty {
+                    count += 1;
+                }
+            }
+        }
+
+        count
+    }
+
     pub fn is_connect4(&self, check_disc_type: DiscType) -> bool {
+        // println!("checking disc type: {}", check_disc_type);
         let (mut horizontal_count, mut vertical_count, mut left_diagonal_count, mut right_diagonal_count);
 
         for i in 0..self.board_rows {
