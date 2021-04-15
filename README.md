@@ -2,7 +2,7 @@
 To run, install [trunk](https://crates.io/crates/trunk).
 **Make sure to run `cargo install wasm-bindgen-cli` in the instructions.**
 
-To run the code, switch to the `web/` folder and just use
+To run the code, switch to the `frontend` folder and just use
 ```
 trunk serve
 ```
@@ -10,6 +10,16 @@ Or you can do it in one-shot with
 ```
 (cd frontend && trunk serve)
 ```
+**Note** The current rust versions have an error with stdweb. A known working version of rust can be installed with:
+```
+rustup override set 1.45.0
+```
+This should be used in the `frontend` directory since override sets the current directory to use the rust version.
+There may be an issue with wasm-unknown-unknown, to fix run
+```
+rustup target add wasm32-unknown-unknown
+```
+
 ### To Run MongoDB backend
 1. Make sure MongoDB is installed on your machine, detail of installation can be found [here](https://docs.mongodb.com/manual/installation/)
 2. Then ensure MongoDB is running on the default port (27017).

@@ -9,12 +9,14 @@ pub enum Msg {
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
     pub value: String,
+    pub placeholder: String,
     pub oninput: Callback<String>,
 }
 
 pub struct TextInput {
     link: ComponentLink<Self>,
     pub text: String,
+    pub placeholder: String,
     props: Props,
 }
 
@@ -26,6 +28,7 @@ impl Component for TextInput {
         Self {
             link,
             text: props.value.clone(),
+            placeholder: props.placeholder.clone(),
             props,
         }
     }
@@ -44,6 +47,7 @@ impl Component for TextInput {
         if self.props != props {
             self.props = props;
             self.text = self.props.value.clone();
+            self.placeholder = self.props.placeholder.clone();
             true
         } else {
             false
@@ -55,6 +59,7 @@ impl Component for TextInput {
             <input
                 type="text"
                 value=&self.text
+                placeholder=&self.placeholder
                 oninput=self.link.callback(|e: InputData| Msg::SetText(e.value))
             />
         }

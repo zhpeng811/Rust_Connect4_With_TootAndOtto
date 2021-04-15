@@ -21,6 +21,10 @@ wee_alloc = "0.4.5"
 serde = "1.0.117"
 anyhow = "1.0.40"
 stdweb = "0.4.20"
+model = { path = "../model" }
+
+[build-dependencies]
+model = { path = "../model" }
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
