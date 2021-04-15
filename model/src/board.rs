@@ -3,9 +3,9 @@ pub use crate::game::GameEvent;
 use std::fmt::Display;
 
 pub struct Board {
-    board_rows: usize,
-    board_columns: usize,
-    board: Vec<Vec<DiscType>>
+    pub board_rows: usize,
+    pub board_columns: usize,
+    pub board: Vec<Vec<DiscType>>
 }
 
 impl Board {
