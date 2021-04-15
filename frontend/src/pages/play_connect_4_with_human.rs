@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use crate::pages::text_input::TextInput;
 use crate::components::canvas_model::CanvasModel;
-use crate::components::ai_difficulty::{Difficulty};
+use model::ai::Difficulty;
 
 pub enum Msg {
     StartGame,
@@ -99,7 +99,7 @@ impl Component for PlayConnect4WithHuman {
                         board_rows = 6
                         board_columns = 7
                         text = String::from("")
-                        difficulty = Difficulty::Easy
+                        difficulty = Difficulty::Easy // Not used, doesn't matter
                         game_done_cbk=self.link.callback(|_| Msg::EndGame)/>
                 </div>
             </div>

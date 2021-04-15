@@ -115,7 +115,7 @@ impl Component for ScoreBoard {
     type Message = Msg;
     type Properties = ();
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let mut this = Self {
             link,
             history: Vec::new(),

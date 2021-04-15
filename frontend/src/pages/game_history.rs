@@ -11,6 +11,7 @@ pub struct HistoryInfo {
     pub player1: String,
     pub player2: String,
     pub winner: String,
+    pub difficulty: String,
     pub time_played: String,
 }
 
@@ -59,6 +60,7 @@ impl GameHistory {
                             <td> { history.game_type.clone() } </td>
                             <td> { history.player1.clone() } </td>
                             <td> { history.player2.clone() } </td>
+                            <td> { history.difficulty.clone() } </td>
                             <td> { history.winner.clone()} </td>
                             <td> { history.time_played.clone() } </td>
                         </tr>
@@ -114,10 +116,11 @@ impl Component for GameHistory {
                 
                 <table>
                     <tr>
-                        <th>{"Game-ID"}</th>
+                        <th>{"Game ID"}</th>
                         <th>{"Game Type"}</th>
                         <th>{"Player1"}</th>
                         <th>{"Player2"}</th>
+                        <th>{"Difficulty"}</th>
                         <th>{"Winner"}</th>
                         <th>{"When Played (UTC Time)"}</th>
                     </tr>

@@ -23,7 +23,7 @@ fn read_input() -> usize {
 
 fn play_connect4_with_computer(row: usize, column: usize) {
     let mut game = BoardGame::new_connect4(row, column, true);
-    let mut ai = ai::Connect4AI::new(row, column, ai::Difficulty::Medium);
+    let ai = ai::Connect4AI::new(row, column, ai::Difficulty::Hard);
     let mut column_to_place: usize = 0;
     loop {
         println!("{}", game.game_board);
@@ -38,13 +38,13 @@ fn play_connect4_with_computer(row: usize, column: usize) {
             }
         } else {
             println!("Computer's turn, computer disc: {}", game.player2.disc_type);
-            let mut clone_game = game.clone();
-            column_to_place = ai.findMove(clone_game);
+            let clone_game = game.clone();
+            column_to_place = ai.find_move(clone_game);
             println!("Computer choose to place at column: {}", column_to_place);
         }
 
         match game.place_disc(column_to_place) {
-            GameEvent::PlaceSuccess => {
+            GameEvent::PlaceSuccess(_) => {
                 match game.check() {
                     GameEvent::Draw => {
                         println!("Game Draw!");
@@ -58,7 +58,7 @@ fn play_connect4_with_computer(row: usize, column: usize) {
                         println!("Player 2 Win!");
                         break;
                     },
-                    GameEvent::PlaceSuccess => (),
+                    GameEvent::Ongoing => (),
                     _ => println!("unexpected")
                 }
             },
@@ -69,7 +69,7 @@ fn play_connect4_with_computer(row: usize, column: usize) {
 }
 
 fn play_connect4_with_human(row: usize, column: usize) {
-    let mut game = BoardGame::new_connect4(6, 7, false);
+    let mut game = BoardGame::new_connect4(row, column, false);
     loop {
         println!("{}", game.game_board);
         if game.current_player == 1 {
@@ -81,7 +81,7 @@ fn play_connect4_with_human(row: usize, column: usize) {
 
         let column_to_place = read_input();
         match game.place_disc(column_to_place) {
-            GameEvent::PlaceSuccess => {
+            GameEvent::PlaceSuccess(_) => {
                 match game.check() {
                     GameEvent::Draw => {
                         println!("Game Draw!");
@@ -95,7 +95,7 @@ fn play_connect4_with_human(row: usize, column: usize) {
                         println!("Player 2 Win!");
                         break;
                     },
-                    GameEvent::PlaceSuccess => (),
+                    GameEvent::Ongoing => (),
                     _ => println!("unexpected")
                 }
             },
@@ -106,7 +106,7 @@ fn play_connect4_with_human(row: usize, column: usize) {
 }
 
 fn play_toototto_with_human(row: usize, column: usize) {
-    let mut game = BoardGame::new_toot_and_otto(6, 7, false);
+    let mut game = BoardGame::new_toot_and_otto(row, column, false);
     loop {
         println!("{}", game.game_board);
         if game.current_player == 1 {
@@ -128,7 +128,7 @@ fn play_toototto_with_human(row: usize, column: usize) {
         }
 
         match game.place_disc(column_to_place) {
-            GameEvent::PlaceSuccess => {
+            GameEvent::PlaceSuccess(_) => {
                 match game.check() {
                     GameEvent::Draw => {
                         println!("Game Draw!");
@@ -142,7 +142,7 @@ fn play_toototto_with_human(row: usize, column: usize) {
                         println!("Player 2 Win!");
                         break;
                     },
-                    GameEvent::PlaceSuccess => (),
+                    GameEvent::Ongoing => (),
                     _ => println!("unexpected")
                 }
             },

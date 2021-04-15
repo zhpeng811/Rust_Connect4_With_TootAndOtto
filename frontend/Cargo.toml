@@ -13,6 +13,7 @@ edition = "2018"
 [dependencies]
 wasm-bindgen = "0.2.63"
 yew = "*"
+yew-components = "0.2.0"
 yew-router = "*"
 yewtil = "*"
 wasm-logger = "*"

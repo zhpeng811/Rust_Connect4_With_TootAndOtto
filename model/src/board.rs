@@ -31,7 +31,7 @@ impl Board {
         for i in (0..self.board_rows).rev() {
             if self.board[i][column] == DiscType::Empty {
                 self.board[i][column] = disc_type;
-                return GameEvent::PlaceSuccess
+                return GameEvent::PlaceSuccess(i as usize)
             }
         }
 
@@ -166,7 +166,7 @@ impl Board {
             }
         }
 
-        GameEvent::Neither
+        GameEvent::Ongoing
     }
 }
 

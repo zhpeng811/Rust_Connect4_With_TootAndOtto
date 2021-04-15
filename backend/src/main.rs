@@ -23,6 +23,7 @@ mod database {
         pub player1: String,
         pub player2: String,
         pub winner: String,
+        pub difficulty: String,
         pub time_played: String,
     }
 
@@ -38,6 +39,7 @@ mod database {
                             let game_type = String::from(document.get("gameType").and_then(Bson::as_str).unwrap_or(""));
                             let player1 = String::from(document.get("Player1Name").and_then(Bson::as_str).unwrap_or(""));
                             let player2 = String::from(document.get("Player2Name").and_then(Bson::as_str).unwrap_or(""));
+                            let difficulty = String::from(document.get("Difficulty").and_then(Bson::as_str).unwrap_or("N/A"));
                             let winner = String::from(document.get("WinnerName").and_then(Bson::as_str).unwrap_or(""));
                             let mut time_played: String = "unknown".to_string();
                             if let Some(date_time) = document.get("GameDate").and_then(Bson::as_utc_date_time) {
@@ -52,6 +54,7 @@ mod database {
                                 game_type,
                                 player1,
                                 player2,
+                                difficulty,
                                 winner,
                                 time_played
                             });
@@ -77,6 +80,7 @@ mod database {
             "Player1Name": body.player1,
             "Player2Name": body.player2,
             "WinnerName": body.winner,
+            "Difficulty": body.difficulty,
             "GameDate": Utc::now()
         };
         let _ = collection.insert_one(doc, None);

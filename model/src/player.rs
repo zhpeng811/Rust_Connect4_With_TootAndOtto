@@ -19,8 +19,4 @@ impl Player {
             disc_type
         }
     }
-
-    pub fn change_disc_type(&mut self, new_type: DiscType) {
-        self.disc_type = new_type;
-    }
 }

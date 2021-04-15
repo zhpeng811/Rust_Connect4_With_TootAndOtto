@@ -22,7 +22,7 @@ use yew::{
     },
 };
 
-use super::ai_difficulty::Difficulty;
+use model::ai::{Difficulty, Connect4AI, TootOttoAI};
 use model::game::*;
 
 use crate::pages::game_history::HistoryInfo;
@@ -44,7 +44,7 @@ pub struct CanvasModel {
     paused: bool,
     reject_click: bool,
     fetch_task: Option<FetchTask>,
-    link: ComponentLink<CanvasModel>,
+    link: ComponentLink<CanvasModel>
 }
 
 #[derive(Clone, PartialEq, Properties)]
@@ -134,13 +134,13 @@ impl CanvasModel {
                 let mut fg_color = "transparent";
                 let board = self.game.game_board.board.clone();
 
-                if (self.game_type == GameType::Connect4) {
+                if self.game_type == GameType::Connect4 {
                     if board[y][x] == DiscType::Red {
                         fg_color = "#ff4136";
                     } else if board[y][x] == DiscType::Yellow {
                         fg_color = "#ffff00";
                     }
-                } else if (self.game_type == GameType::TOOTandOTTO) {
+                } else if self.game_type == GameType::TOOTandOTTO {
                     if board[y][x] == DiscType::T {
                         text = "T";
                         fg_color = "#99ffcc";
@@ -175,7 +175,7 @@ impl CanvasModel {
 
     // Same for both Connect 4 and TOOT-and-OTTO
     pub fn on_region(&self, coord: f64, x: f64, radius: f64) -> bool {
-        return ((coord - x) * (coord - x) <= radius * radius);
+        return (coord - x) * (coord - x) <= radius * radius;
     }
 
     // Same for both Connect 4 and TOOT-and-OTTO
@@ -223,10 +223,22 @@ impl CanvasModel {
         } else {
             self.draw();
             self.check();
-            if self.vs_ai && self.game_type == GameType::Connect4 {
-                // TODO: add AI
-            } else if self.vs_ai && self.game_type == GameType::TOOTandOTTO {
-                // TODO: add AI
+            if self.vs_ai && self.game_type == GameType::Connect4 && self.game.current_player == 2 {
+                let connect4_ai = Connect4AI::new(self.board_rows, self.board_columns, self.props.difficulty);
+                let best_move = connect4_ai.find_best_move(self.game.clone());
+                log::info!("Computer Choose to place at column {}", best_move);
+                self.paused = false;
+                self.action(best_move, true);
+            } else if self.vs_ai && self.game_type == GameType::TOOTandOTTO && self.game.current_player == 2 {
+                let toototto_ai = TootOttoAI::new(self.board_rows, self.board_columns, self.props.difficulty);
+                let (best_move, disc_type) = toototto_ai.find_best_move(self.game.clone());
+
+                let current_disc_type = self.game.get_current_disc_type(); // record the current disc type
+                self.game.change_disc_type(disc_type); // set disc type to whatever the AI return
+                log::info!("Computer Choose to place at column {}", best_move);
+                self.paused = false;
+                self.action(best_move, true); // place the piece
+                self.game.change_disc_type(current_disc_type); // reset the disc type back to original
             } else {
                 self.reject_click = false;
             }
@@ -252,7 +264,7 @@ impl CanvasModel {
         self.paused = true;
         self.won = true;
         self.reject_click = false;
-        let mut msg = String::new();
+        let msg: String;
         if winner == 1 {
             msg = format!("{} wins", self.props.player1.as_ref().unwrap());
         } else if winner == 2 {
@@ -269,7 +281,8 @@ impl CanvasModel {
         context.set_fill_style_color("#111");
         context.fill_text(&to_print, 150.0, 20.0, None);
 
-        log::info!("{}", self.game_type.to_string());
+        let difficulty = if self.vs_ai {self.props.difficulty.to_string()} else {"N/A".to_string()};
+
         let history = HistoryInfo {
             game_type: self.game_type.to_string(),
             player1: self.props.player1.as_ref().unwrap().clone(),
@@ -281,6 +294,7 @@ impl CanvasModel {
             } else {
                 String::from("Draw")
             },
+            difficulty: difficulty,
             time_played: "".to_string(), // doesn't matter here, backend will use the current time
         };
 
@@ -408,7 +422,7 @@ impl Component for CanvasModel {
     fn change(&mut self, props: Self::Properties) -> ShouldRender {
         self.props = props;
         // Only TOOT-and-OTTO is allowed to change disc-type / text
-        if (self.game_type == GameType::TOOTandOTTO) {
+        if self.game_type == GameType::TOOTandOTTO {
             self.text = self.props.text.as_ref().unwrap().clone(); 
             if self.text.eq("T") {
                 self.game.change_disc_type(DiscType::T);
@@ -432,7 +446,6 @@ impl Component for CanvasModel {
             self.canvas = Some(canvas(self.canvas_id.as_str()));
             self.canvas_render_context = Some(context(self.canvas_id.as_str()));
 
-            let context = self.canvas_render_context.as_ref().unwrap();
             let cloned_cbk = self.cbk.clone();
 
             self.canvas.as_ref().unwrap().add_event_listener(

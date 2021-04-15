@@ -4,13 +4,13 @@ pub use crate::player::{Player, PlayerType};
 pub use crate::board::Board;
 
 pub enum GameEvent {
-    PlaceSuccess,
+    PlaceSuccess(usize),
     Player1Win,
     Player2Win,
     Draw,
     IsTOOT,
     IsOTTO,
-    Neither,
+    Ongoing,
     PlaceColumnFull,
     UnexpectedErr,
 }
@@ -72,7 +72,7 @@ impl BoardGame {
         }
     }
 
-    fn get_current_disc_type(&self) -> DiscType {
+    pub fn get_current_disc_type(&self) -> DiscType {
         if self.current_player == 1 {
             self.player1.disc_type
         } else {
@@ -82,10 +82,8 @@ impl BoardGame {
 
     // for TOOT and OTTO
     pub fn change_disc_type(&mut self, disc_type: DiscType) {
-        let player: &mut Player;
-
-        if (self.game_type == GameType::Connect4) {
-            // not allowed to chagne disc type for connect 4
+        if self.game_type == GameType::Connect4 {
+            // not allowed to change disc type for connect 4
             // there should not be a GUI that allows this
             return
         }
@@ -119,7 +117,7 @@ impl BoardGame {
             return GameEvent::Draw
         } else {
             self.switch_turn();
-            return GameEvent::PlaceSuccess
+            return GameEvent::Ongoing
         }
     }
 }

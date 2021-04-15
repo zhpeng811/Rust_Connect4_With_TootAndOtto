@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use rand::prelude::*;
 use crate::game::{BoardGame, GameEvent};
 use crate::board::{Board};
@@ -7,7 +9,24 @@ use crate::disc::{DiscType};
 pub enum Difficulty {
     Easy,
     Medium,
-    Hard,
+    Hard
+}
+
+// needed to <Select> component display
+impl ToString for Difficulty {
+    fn to_string(&self) -> String {
+        match self {
+            Difficulty::Easy => String::from("Easy"),
+            Difficulty::Medium => String::from("Medium"),
+            Difficulty::Hard => String::from("Hard"),
+        }
+    }
+}
+
+impl Difficulty {
+    pub fn to_vec() -> Vec<Difficulty> {
+        vec![Difficulty::Easy, Difficulty::Medium, Difficulty::Hard]
+    }
 }
 
 pub struct Connect4AI {
@@ -19,7 +38,6 @@ pub struct Connect4AI {
     beta: isize
 }
 
-// hard algorithm from the following implementation: https://github.com/KeithGalli/Connect4-Python/blob/master/connect4_with_ai.py
 impl Connect4AI {
     pub fn new(board_rows: usize, board_columns: usize, difficulty: Difficulty) -> Self {
         Self {
@@ -32,57 +50,79 @@ impl Connect4AI {
         }
     }
 
-    pub fn findMove(&self, game: BoardGame) -> usize {
+    fn random_gen(&self, game_board: Board) -> usize {
+        let valid_columns = game_board.get_valid_columns();
+        *valid_columns.choose(&mut thread_rng()).unwrap()
+    }
+
+    pub fn find_best_move(&self, game: BoardGame) -> usize {
         match self.difficulty {
             Difficulty::Easy => {
                 // pure random
-                let mut rng = rand::thread_rng();
-                return rng.gen_range(0, self.board_columns)
+                return self.random_gen(game.game_board.clone())
             },
             Difficulty::Medium => {
-                // first find if there's a winning move for either player or AI
+                // find if there's a winning move for AI
                 // if not choose randomly
-                return self.find_best_move(game.game_board.clone())
+                let winning_move = self.find_winning_move(game.game_board.clone());
+                if winning_move >= 0 {
+                    return winning_move as usize
+                } else {
+                    return self.random_gen(game.game_board.clone())
+                }
             }
             Difficulty::Hard => {
-                // minmax algorithm, NOT working, DO NOT use
+                // minmax algorithm for Connect 4, NOT working, DO NOT use
                 // return self.minmax(game.game_board.clone(), self.max_depth, true).0
-                return 0 // place holder
-            }
+
+                // find if there's a winning move for AI
+                let winning_move = self.find_winning_move(game.game_board.clone());
+                if winning_move >= 0 {
+                    return winning_move as usize
+                } else { // find if there's a blocking move for player
+                    let blocking_move = self.find_blocking_move(game.game_board.clone());
+                    if blocking_move >= 0 {
+                        return blocking_move as usize
+                    } else {
+                        return self.random_gen(game.game_board.clone())
+                    }
+                }
+            },
+            
         }
     }
 
-    fn find_best_move(&self, game_board: Board) -> usize {
+    pub fn find_winning_move(&self, game_board: Board) -> isize {
         // find if there's a move that causes AI to win
         let valid_columns = game_board.get_valid_columns();
         for col in valid_columns.clone() {
             let mut clone_board = game_board.clone();
             clone_board.place_disc(col, DiscType::Yellow);
             if clone_board.is_connect4(DiscType::Yellow) {
-                return col
+                return col as isize
             }
         }
 
-        // find if there's a move that can block player to win
+        -1
+    }
+
+    fn find_blocking_move(&self, game_board: Board) -> isize {
+        // find if there's a move that can prevent player to win
+        let valid_columns = game_board.get_valid_columns();
         for col in valid_columns {
             let mut clone_board = game_board.clone();
             clone_board.place_disc(col, DiscType::Red);
             if clone_board.is_connect4(DiscType::Red) {
-                return col
+                return col as isize
             }
         }
 
-        // no best move find, place randomly
-        let mut rng = rand::thread_rng();
-        return rng.gen_range(0, self.board_columns) 
+        -1
     }
 
+    // hard algorithm from the following implementation: https://github.com/KeithGalli/Connect4-Python/blob/master/connect4_with_ai.py
     fn evaluate_window(&self, window: &Vec<DiscType>, disc_type: DiscType) -> isize {
         let mut score: isize = 0;
-        let mut oppoent_type = DiscType::Red;
-        if disc_type == DiscType::Red {
-            oppoent_type = DiscType::Yellow;
-        }
 
         let mut disc_count = 0;
         let mut empty_count = 0;
@@ -217,5 +257,120 @@ impl Connect4AI {
             return (column, score)
         }
     }
+}
 
+pub struct TootOttoAI {
+    board_rows: usize,
+    board_columns: usize,
+    difficulty: Difficulty
+}
+
+impl TootOttoAI {
+    pub fn new(board_rows: usize, board_columns: usize, difficulty: Difficulty) -> Self {
+        Self {
+            board_rows,
+            board_columns,
+            difficulty
+        }
+    }
+
+    fn random_gen(&self, game_board: Board) -> (usize, DiscType) {
+        let mut rng = thread_rng();
+        let valid_columns = game_board.get_valid_columns();
+        let column = *valid_columns.choose(&mut rng).unwrap();
+        let disc_type = {
+            if rng.gen_range(0, 2) == 0 {
+                DiscType::T
+            } else {
+                DiscType::O
+            }
+        };
+        (column, disc_type)
+    }
+
+    pub fn find_best_move(&self, game: BoardGame) -> (usize, DiscType) {
+        match self.difficulty {
+            Difficulty::Easy => {
+                // pure random
+                return self.random_gen(game.game_board.clone())
+            },
+            Difficulty::Medium => {
+                // find if there's a winning move for AI
+                // if not choose randomly
+                let (winning_move, disc_type) = self.find_winning_move(game.game_board.clone());
+                if winning_move >= 0 {
+                    return (winning_move as usize, disc_type)
+                } else {
+                    return self.random_gen(game.game_board.clone())
+                }
+            }
+            Difficulty::Hard => {
+                // find if there's a winning move for AI
+                let (winning_move, disc_type) = self.find_winning_move(game.game_board.clone());
+                if winning_move >= 0 {
+                    return (winning_move as usize, disc_type)
+                } else { // find if there's a blocking move for player
+                    let (blocking_move, disc_type) = self.find_blocking_move(game.game_board.clone());
+                    if blocking_move >= 0 {
+                        return (blocking_move as usize, disc_type)
+                    } else {
+                        return self.random_gen(game.game_board.clone())
+                    }
+                }
+            },
+            
+        }
+    }
+
+    fn find_winning_move(&self, game_board: Board) -> (isize, DiscType) {
+        // find if there's a move that causes AI(OTTO) to win
+        let valid_columns = game_board.get_valid_columns();
+        // first check for 'T'
+        for col in valid_columns.clone() {
+            let mut clone_board = game_board.clone();
+            clone_board.place_disc(col, DiscType::T);
+            match clone_board.is_toot_or_otto() {
+                GameEvent::IsOTTO => return (col as isize, DiscType::T),
+                _ => ()
+            }
+        }
+
+        // then check for 'O'
+        for col in valid_columns.clone() {
+            let mut clone_board = game_board.clone();
+            clone_board.place_disc(col, DiscType::O);
+            match clone_board.is_toot_or_otto() {
+                GameEvent::IsOTTO => return (col as isize, DiscType::O),
+                _ => ()
+            }
+        }
+
+        (-1, DiscType::Empty)
+    }
+
+    fn find_blocking_move(&self, game_board: Board) -> (isize, DiscType) {
+        // find if there's a move that can prevent player(TOOT) to win
+        let valid_columns = game_board.get_valid_columns();
+        // first check for 'T'
+        for col in valid_columns.clone() {
+            let mut clone_board = game_board.clone();
+            clone_board.place_disc(col, DiscType::T);
+            match clone_board.is_toot_or_otto() {
+                GameEvent::IsTOOT => return (col as isize, DiscType::O), // place the opposite disc to prevent winning
+                _ => ()
+            }
+        }
+
+        // then check for 'O'
+        for col in valid_columns.clone() {
+            let mut clone_board = game_board.clone();
+            clone_board.place_disc(col, DiscType::O);
+            match clone_board.is_toot_or_otto() {
+                GameEvent::IsTOOT => return (col as isize, DiscType::T),
+                _ => ()
+            }
+        }
+
+        (-1, DiscType::Empty)
+    }
 }
