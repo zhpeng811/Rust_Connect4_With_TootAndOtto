@@ -1,2 +1,2 @@
-pub mod connect_4_canvas;
+pub mod canvas_model;
 pub mod ai_difficulty;

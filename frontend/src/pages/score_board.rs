@@ -173,7 +173,7 @@ impl Component for ScoreBoard {
                         <th> {"Game Type"} </th>
                         <th> {"Winner"} </th>
                         <th> {"Played Against"} </th>
-                        <th> {"When Played"} </th>
+                        <th> {"When Played (UTC Time)"} </th>
                     </tr>
                     
                     { self.detail_won_by_computer_stat() }

@@ -12,4 +12,5 @@ bson = "0.14.0"
 chrono = "0.4.11"
 rocket = {version = "0.4.4", default-features = false}
 rocket_contrib = "0.4.4"
+rocket_cors = "0.5.1"
 serde = { version = "1.0.117", features = ["derive"]}

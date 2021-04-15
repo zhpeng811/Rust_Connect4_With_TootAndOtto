@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use crate::pages::text_input::TextInput;
-use crate::components::connect_4_canvas::CanvasModel;
-use crate::components::ai_difficulty::Difficulty::Easy;
+use crate::components::canvas_model::CanvasModel;
+use crate::components::ai_difficulty::{Difficulty};
 
 pub enum Msg {
     StartGame,
@@ -31,14 +31,12 @@ impl Component for PlayConnect4WithHuman {
             disable_button: false,
             display_board: String::from("none"),
             link,
-            disable_input: false
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::StartGame => {
-                self.disable_input = true;
                 self.game_running = true;
                 self.disable_button = true;
                 self.display_board = String::from("block");
@@ -95,10 +93,13 @@ impl Component for PlayConnect4WithHuman {
                     <small>{format!("(Disc Colors: {} - ", self.player1_name)} <b>{"Red"}</b> {format!("   and    {} - ", self.player2_name)} <b>{"Yellow)"}</b></small>
                     <br/>
                     <CanvasModel:
-                        canvas_id = "connect_human"
+                        canvas_id = "connect4_human"
                         player1 = self.player1_name.clone()
                         player2 = self.player2_name.clone()
-                        difficulty = Easy
+                        board_rows = 6
+                        board_columns = 7
+                        text = String::from("")
+                        difficulty = Difficulty::Easy
                         game_done_cbk=self.link.callback(|_| Msg::EndGame)/>
                 </div>
             </div>
