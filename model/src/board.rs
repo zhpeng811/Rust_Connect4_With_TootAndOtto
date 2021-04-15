@@ -47,7 +47,7 @@ impl Board {
             }
         }
 
-        count == self.board_rows
+        count == self.board_columns
     }
 
     pub fn get_valid_columns(&self) -> Vec<usize> {
