@@ -70,7 +70,7 @@ impl GameHistory {
         } else {
             html! {
                 <tr>
-                    <td colspan="6"> {"Failed to get history or no game history exist"} </td>
+                    <td colspan="7"> {"Failed to get history or no game history exist"} </td>
                 </tr>
             }
         }
