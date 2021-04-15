@@ -17,7 +17,6 @@ pub struct PlayConnect4WithHuman {
     disable_button: bool,
     display_board: String,
     link: ComponentLink<Self>,
-    disable_input: bool
 }
 
 impl Component for PlayConnect4WithHuman {
@@ -40,8 +39,6 @@ impl Component for PlayConnect4WithHuman {
         match msg {
             Msg::StartGame => {
                 self.disable_input = true;
-                log::info!("Player 1 name: {}", self.player1_name);
-                log::info!("Player 2 name: {}", self.player2_name);
                 self.game_running = true;
                 self.disable_button = true;
                 self.display_board = String::from("block");

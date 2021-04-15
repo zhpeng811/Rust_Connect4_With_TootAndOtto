@@ -10,7 +10,7 @@ pub struct PlayConnect4WithComputer {
     player1_name: String,
     player2_name: String,
     link: ComponentLink<Self>,
-    disable_input: bool
+    disable_button: bool
 }
 
 impl Component for PlayConnect4WithComputer {
@@ -22,14 +22,14 @@ impl Component for PlayConnect4WithComputer {
             player1_name: String::from(""),
             player2_name: String::from("Computer"),
             link,
-            disable_input: false
+            disable_button: false
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::StartGame => {
-                self.disable_input = true;
+                self.disable_button = true;
                 log::info!("Player 1 name: {}", self.player1_name);
                 log::info!("Player 2 name: {}", self.player2_name);
                 true
@@ -54,12 +54,13 @@ impl Component for PlayConnect4WithComputer {
                 <div class="col-md-offset-3 col-md-8">
                     <TextInput 
                         value = self.player1_name.clone()
+                        placeholder = "Player's Name"
                         oninput = self.link.callback(Msg::SetPlayer1Name)
-                        disabled = self.disable_input
+                        disabled = {self.disable_button}
                     />
                     <button 
                         onclick = self.link.callback(|_| Msg::StartGame)
-                        disabled = self.disable_input
+                        disabled = {self.disable_button}
                     >
                     {"Start Game"}
                     </button>
