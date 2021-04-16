@@ -5,6 +5,7 @@
 pub enum BoardSize {
     SevenBySix,
     FiveByFour,
+    SixByFour,
     SixByFive,
     EightBySeven,
     NineBySeven,
@@ -17,6 +18,7 @@ impl ToString for BoardSize {
         match self {
             BoardSize::SevenBySix => String::from("7 x 6"),
             BoardSize::FiveByFour => String::from("5 x 4"),
+            BoardSize::SixByFour => String::from("6 x 4"),
             BoardSize::SixByFive => String::from("6 x 5"),
             BoardSize::EightBySeven => String::from("8 x 7"),
             BoardSize::NineBySeven => String::from("9 x 7"),
@@ -31,6 +33,7 @@ impl BoardSize {
         match self {
             BoardSize::SevenBySix => return 6,
             BoardSize::FiveByFour => return 4,
+            BoardSize::SixByFour => return 4,
             BoardSize::SixByFive => return 5,
             BoardSize::EightBySeven => return 7,
             BoardSize::NineBySeven => return 7,
@@ -43,6 +46,7 @@ impl BoardSize {
         match self {
             BoardSize::SevenBySix => return 7,
             BoardSize::FiveByFour => return 5,
+            BoardSize::SixByFour => 6,
             BoardSize::SixByFive => return 6,
             BoardSize::EightBySeven => return 8,
             BoardSize::NineBySeven => return 9,
@@ -55,6 +59,7 @@ impl BoardSize {
         vec![
             BoardSize::SevenBySix, 
             BoardSize::FiveByFour,
+            BoardSize::SixByFour,
             BoardSize::SixByFive,
             BoardSize::EightBySeven,
             BoardSize::NineBySeven,

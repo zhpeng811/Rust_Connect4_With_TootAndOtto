@@ -39,7 +39,7 @@ impl Component for PlayTOOTOTTOWithHuman {
             game_running: false,
             disable_button: false,
             text: String::from("T"), // default as T
-            board_size: BoardSize::SevenBySix,
+            board_size: BoardSize::SixByFour,
             display_board: String::from("none"),
             update_text: link.callback(|input_data: InputData| Msg::UpdateText(input_data.value.to_string())),
             link,

@@ -41,7 +41,7 @@ impl Component for PlayTOOTOTTOWithComputer {
             display_board: String::from("none"),
             difficulty: Difficulty::Easy,
             text: String::from("T"), // default as T
-            board_size: BoardSize::SevenBySix,
+            board_size: BoardSize::SixByFour,
             update_text: link.callback(|input_data: InputData| Msg::UpdateText(input_data.value.to_string())),
             link,
         }
