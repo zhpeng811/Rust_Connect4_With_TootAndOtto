@@ -85,6 +85,11 @@ mod database {
         };
         let _ = collection.insert_one(doc, None);
     }
+
+    #[delete("/history")]
+    pub fn delete_history(collection: State<Collection>) {
+        collection.drop(None);
+    }
 }
 
 #[get("/")]
@@ -113,7 +118,7 @@ fn main() {
 
     let cors = rocket_cors::CorsOptions {
         allowed_origins,
-        allowed_methods: vec![Method::Get, Method::Post].into_iter().map(From::from).collect(),
+        allowed_methods: vec![Method::Get, Method::Post, Method::Delete].into_iter().map(From::from).collect(),
         allowed_headers: AllowedHeaders::all(),
         allow_credentials: true,
         ..Default::default()
@@ -135,7 +140,8 @@ fn main() {
                     index,
                     files,
                     database::get_histories,
-                    database::insert_history
+                    database::insert_history,
+                    database::delete_history,
                 ])
                 .attach(cors);
             rocket.launch();
