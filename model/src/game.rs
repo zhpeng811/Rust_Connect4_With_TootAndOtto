@@ -109,7 +109,8 @@ impl BoardGame {
             match event {
                 GameEvent::IsTOOT => return GameEvent::Player1Win,
                 GameEvent::IsOTTO => return GameEvent::Player2Win,
-                _ => {}
+                GameEvent::Draw => return GameEvent::Draw, // happens when TOOT and OTTO are both matched
+                _ => ()
             }
         }
 

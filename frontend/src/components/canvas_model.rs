@@ -226,13 +226,13 @@ impl CanvasModel {
             self.draw();
             self.check();
             if self.vs_ai && self.game_type == GameType::Connect4 && self.game.current_player == 2 {
-                let connect4_ai = Connect4AI::new(self.board_rows, self.board_columns, self.props.difficulty);
+                let mut connect4_ai = Connect4AI::new(self.board_rows, self.board_columns, self.props.difficulty);
                 let best_move = connect4_ai.find_best_move(self.game.clone());
                 log::info!("Computer Choose to place at column {}", best_move);
                 self.paused = false;
                 self.action(best_move, true);
             } else if self.vs_ai && self.game_type == GameType::TOOTandOTTO && self.game.current_player == 2 {
-                let toototto_ai = TootOttoAI::new(self.board_rows, self.board_columns, self.props.difficulty);
+                let mut toototto_ai = TootOttoAI::new(self.board_rows, self.board_columns, self.props.difficulty);
                 let (best_move, disc_type) = toototto_ai.find_best_move(self.game.clone());
 
                 let current_disc_type = self.game.get_current_disc_type(); // record the current disc type
@@ -400,7 +400,6 @@ impl Component for CanvasModel {
                 for j in 0..self.board_columns {
                     if self.on_region(x, (75 * j + 100) as f64, 25 as f64) {
                         self.paused = false;
-                        log::info!("clicked column {}", j);
                         let valid = self.action(j, false);
                         if valid == 1 {
                             self.reject_click = true;

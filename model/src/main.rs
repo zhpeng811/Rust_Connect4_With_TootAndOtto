@@ -20,9 +20,9 @@ fn read_input() -> usize {
     }
 }
 
-fn play_connect4_with_computer(row: usize, column: usize) {
+fn play_connect4_with_computer(row: usize, column: usize, difficulty: ai::Difficulty) {
     let mut game = BoardGame::new_connect4(row, column, true);
-    let ai = ai::Connect4AI::new(row, column, ai::Difficulty::Hard);
+    let mut ai = ai::Connect4AI::new(row, column, difficulty);
     loop {
         println!("{}", game.game_board);
         let column_to_place: usize;
@@ -108,9 +108,9 @@ fn play_connect4_with_human(row: usize, column: usize) {
     }
 }
 
-fn play_toototto_with_computer(row: usize, column: usize) {
+fn play_toototto_with_computer(row: usize, column: usize, difficulty: ai::Difficulty) {
     let mut game = BoardGame::new_toot_and_otto(row, column, false);
-    let ai = ai::TootOttoAI::new(row, column, ai::Difficulty::Hard);
+    let mut ai = ai::TootOttoAI::new(row, column, difficulty);
 
     loop {
         println!("{}", game.game_board);
@@ -222,21 +222,48 @@ fn play_toototto_with_human(row: usize, column: usize) {
     }
 }
 
+fn change_difficulty() -> ai::Difficulty {
+    println!("Pick your difficulty: ");
+    println!("1: Easy");
+    println!("2: Medium");
+    println!("3: Hard");
+    println!("4: Insane");
+
+    loop {
+        let input = read_input();
+        match input {
+            1 => return ai::Difficulty::Easy,
+            2 => return ai::Difficulty::Medium,
+            3 => return ai::Difficulty::Hard,
+            4 => return ai::Difficulty::Insane,
+            _ => {
+                println!("invalid input");
+                continue;
+            }
+        }
+    }
+}
+
 fn main() {
+    let mut difficulty: ai::Difficulty = ai::Difficulty::Easy;
+
     loop {
         println!("pick a game: ");
+        println!("current AI difficulty: {}", difficulty.to_string());
         println!("1: Connect 4 With Computer");
         println!("2: Connect 4 With Human");
         println!("3: TOOT and OTTO with Computer");
         println!("4: TOOT and OTTO with Human");
-        println!("5: quit");
+        println!("5: change difficulty vs Computer");
+        println!("6: quit");
         let input = read_input();
         match input {
-            1 => play_connect4_with_computer(6, 7),
+            1 => play_connect4_with_computer(6, 7, difficulty),
             2 => play_connect4_with_human(6, 7),
-            3 => play_toototto_with_computer(6, 7),
+            3 => play_toototto_with_computer(6, 7, difficulty),
             4 => play_toototto_with_human(6, 7),
-            5 => break,
+            5 => difficulty = change_difficulty(),
+            6 => break,
             _ => {
                 println!("invalid input");
                 continue;

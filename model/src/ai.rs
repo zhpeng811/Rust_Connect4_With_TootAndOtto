@@ -9,7 +9,8 @@ use crate::disc::{DiscType};
 pub enum Difficulty {
     Easy,
     Medium,
-    Hard
+    Hard,
+    Insane,
 }
 
 // needed to <Select> component display
@@ -19,34 +20,128 @@ impl ToString for Difficulty {
             Difficulty::Easy => String::from("Easy"),
             Difficulty::Medium => String::from("Medium"),
             Difficulty::Hard => String::from("Hard"),
+            Difficulty::Insane => String::from("Insane")
         }
     }
 }
 
 impl Difficulty {
     pub fn to_vec() -> Vec<Difficulty> {
-        vec![Difficulty::Easy, Difficulty::Medium, Difficulty::Hard]
+        vec![Difficulty::Easy, Difficulty::Medium, Difficulty::Hard, Difficulty::Insane]
     }
+}
+
+const ERR_CODE: i64 = 421;
+const REWARD: i64 = 999999;
+
+fn fill_map(
+        new_state: &Vec<Vec<i64>>, 
+        column: usize, 
+        value: i64, 
+        board_rows: usize,
+        board_columns: usize
+    ) -> Vec<Vec<i64>> {
+
+    let mut temp_map = new_state.clone();
+    if temp_map[0][column] != 0 || column >= board_columns {
+        temp_map[0][0] = ERR_CODE; 
+    }
+
+    let mut done = false;
+    let mut row = 0;
+
+    for i in 0..board_rows - 1 {
+        if temp_map[i + 1][column] != 0 {
+            done = true;
+            row = i;
+            break;
+        }
+    }
+    if !done {
+        row = board_rows - 1;
+    }
+    temp_map[row][column] = value;
+    return temp_map;
+}
+
+fn get_random_index(len: usize) -> usize {
+    let mut rng = rand::thread_rng();
+    let random: f64 = rng.gen();
+
+    return (random * len as f64).floor() as usize;
+}
+
+fn choose<T: Copy>(choice: &Vec<T>) -> T {
+    let index = get_random_index(choice.len());
+    return choice[index];
+}
+
+pub fn check_state(state: &Vec<Vec<i64>>, board_rows: usize, board_columns: usize, is_sign: bool) -> (i64, i64) {
+    let mut win_val = 0;
+    let mut chain_val = 0;
+    let (mut temp_r, mut temp_b, mut temp_br, mut temp_tr);
+    for i in 0..board_rows {
+        for j in 0..board_columns {
+            temp_r = 0;
+            temp_b = 0;
+            temp_br = 0;
+            temp_tr = 0;
+            for k in 0..=3 {
+                let sign: i64 = {
+                    if is_sign {if k == 0 || k == 3 { -1 } else { 1 }}
+                    else { 1 }
+                };
+                if j + k < board_columns {
+                    temp_r += sign * state[i][j + k];
+                }
+
+                if i + k < board_rows {
+                    temp_b += sign * state[i + k][j];
+                }
+
+                if i + k < board_rows && j + k < board_columns {
+                    temp_br += sign * state[i + k][j + k];
+                }
+
+                if i >= k && j + k < board_columns  {
+                    temp_tr += sign * state[i - k][j + k];
+                }
+            }
+            chain_val += temp_r * temp_r * temp_r;
+            chain_val += temp_b * temp_b * temp_b;
+            chain_val += temp_br * temp_br * temp_br;
+            chain_val += temp_tr * temp_tr * temp_tr;
+
+            if temp_r.abs() == 4 {
+                win_val = temp_r;
+            } else if temp_b.abs() == 4 {
+                win_val = temp_b;
+            } else if temp_br.abs() == 4 {
+                win_val = temp_br;
+            } else if temp_tr.abs() == 4 {
+                win_val = temp_tr;
+            }
+        }
+    }
+
+    return (win_val, chain_val);
 }
 
 pub struct Connect4AI {
     board_rows: usize,
     board_columns: usize,
-    max_depth: usize,
     difficulty: Difficulty,
-    alpha: isize,
-    beta: isize
+    score_board: Vec<Vec<i64>>
 }
 
 impl Connect4AI {
     pub fn new(board_rows: usize, board_columns: usize, difficulty: Difficulty) -> Self {
+        let map: Vec<Vec<i64>> = vec![vec![0; board_columns]; board_rows];
         Self {
             board_rows,
             board_columns,
-            max_depth: 6,
             difficulty,
-            alpha: std::isize::MIN,
-            beta: std::isize::MAX
+            score_board: map,
         }
     }
 
@@ -58,26 +153,28 @@ impl Connect4AI {
         }
     }
 
-    pub fn find_best_move(&self, game: BoardGame) -> usize {
+    fn convert_board(&mut self, board: Board) {
+        for y in 0..self.board_rows {
+            for x in 0..self.board_columns {
+                self.score_board[y][x] = if board.board[y][x] == DiscType::Red {
+                    1
+                } else if board.board[y][x] == DiscType::Yellow {
+                    -1
+                } else {
+                    0
+                }
+            }
+        }
+    }
+
+    pub fn find_best_move(&mut self, game: BoardGame) -> usize {
+        self.convert_board(game.game_board.clone());
         match self.difficulty {
             Difficulty::Easy => {
                 // pure random
                 return self.random_gen(game.game_board.clone())
             },
             Difficulty::Medium => {
-                // find if there's a winning move for AI
-                // if not choose randomly
-                let winning_move = self.find_winning_move(game.game_board.clone());
-                if winning_move >= 0 {
-                    return winning_move as usize
-                } else {
-                    return self.random_gen(game.game_board.clone())
-                }
-            }
-            Difficulty::Hard => {
-                // minmax algorithm for Connect 4, NOT working, DO NOT use
-                // return self.minmax(game.game_board.clone(), self.max_depth, true).0
-
                 // find if there's a winning move for AI
                 let winning_move = self.find_winning_move(game.game_board.clone());
                 if winning_move >= 0 {
@@ -90,12 +187,19 @@ impl Connect4AI {
                         return self.random_gen(game.game_board.clone())
                     }
                 }
-            },
-            
+            }
+            _ => { // Hard or Insane, use minmax algorithm with alpha-beta pruning
+                let choice_val = self.max_state(-1, &self.score_board, 0, -100000000007, 100000000007);
+                let choice = choice_val.1;
+                if choice < 0 || choice as usize > self.board_columns {
+                    return self.random_gen(game.game_board.clone());
+                }
+                return choice as usize;
+            }
         }
     }
 
-    pub fn find_winning_move(&self, game_board: Board) -> isize {
+    fn find_winning_move(&self, game_board: Board) -> isize {
         // find if there's a move that causes AI to win
         let valid_columns = game_board.get_valid_columns();
         for col in valid_columns.clone() {
@@ -123,157 +227,143 @@ impl Connect4AI {
         -1
     }
 
-    // hard algorithm from the following implementation: https://github.com/KeithGalli/Connect4-Python/blob/master/connect4_with_ai.py
-    fn evaluate_window(&self, window: &Vec<DiscType>, disc_type: DiscType) -> isize {
-        let mut score: isize = 0;
+    pub fn value(
+        &self,
+        ai_move_value: i64,
+        state: &Vec<Vec<i64>>,
+        depth: i64,
+        alpha: i64,
+        beta: i64,
+    ) -> (i64, i64) {
+        let val = check_state(state, self.board_rows, self.board_columns, false);
+        let max_depth = match self.difficulty {
+            Difficulty::Hard => 2,
+            Difficulty::Insane => 3,
+            _ => 1,
+        };
+        if depth >= max_depth { // if slow (or memory consumption is high), lower the value
+            // if win, value = +inf
+            let win_val = val.0;
+            let chain_val = val.1 * ai_move_value;
+            let mut ret_value = chain_val;
 
-        let mut disc_count = 0;
-        let mut empty_count = 0;
-        let mut oppo_count = 0;
-        for i in 0..window.len() {
-            if window[i] == disc_type {
-                disc_count += 1;
-            } else if window[i] == DiscType::Empty {
-                empty_count += 1;
-            } else {
-                oppo_count += 1;
+            // If it lead to winning, then do it
+            if win_val == 4 * ai_move_value { // AI win, AI wants to win of course
+                ret_value = REWARD;
+            } else if win_val == 4 * ai_move_value * -1 { // AI lose, AI hates losing
+                ret_value = REWARD * -1;
             }
+            ret_value -= depth * depth;
+
+            return (ret_value, -1);
         }
 
-        if disc_count >= 4 {
-            score += 100;
-        } else if disc_count == 3 && empty_count == 1 {
-            score += 5;
-        } else if disc_count == 2 {
-            score += 2;
-        } 
-
-        if oppo_count == 3 && empty_count == 1 {
-            score -= 4;
+        let win = val.0;
+        // if already won, then return the value right away
+        if win == 4 * ai_move_value { // AI win, AI wants to win of course
+            return (REWARD - depth * depth, -1);
+        }
+        if win == 4 * ai_move_value * -1 { // AI lose, AI hates losing
+            return (REWARD * -1 - depth * depth, -1);
         }
 
-        score
+        if depth % 2 == 0 {
+            return self.min_state(ai_move_value, state, depth + 1, alpha, beta);
+        }
+        return self.max_state(ai_move_value, state, depth + 1, alpha, beta);
     }
 
-    fn score_position(&self, game_board: &Board, disc_type: DiscType) -> isize {
-        let mut center_count = 0;
-        for i in 0..self.board_rows {
-            if game_board.board[i][self.board_columns / 2] == disc_type {
-                center_count += 1;
-            }
-        }
-        let mut score = center_count * 3;
+    pub fn max_state(
+        &self,
+        ai_move_value: i64,
+        state: &Vec<Vec<i64>>,
+        depth: i64,
+        mut alpha: i64,
+        beta: i64,
+    ) -> (i64, i64) {
+        let mut v = -100000000007;
+        let move_val: i64;
+        let mut move_queue = Vec::new();
 
-        for r in 0..self.board_rows {
-            let row_array = &game_board.board[r];
-            for c in 0..self.board_columns - 3 {
-                let mut window: Vec<DiscType> = Vec::new();
-                for i in 0..4 {
-                    window.push(row_array[c + i]);
+        for j in 0..self.board_columns {
+            let temp_state = fill_map(state, j, ai_move_value, self.board_rows, self.board_columns);
+            if temp_state[0][0] != ERR_CODE {
+                let temp_val = self.value(ai_move_value, &temp_state, depth, alpha, beta);
+                if temp_val.0 > v {
+                    v = temp_val.0;
+                    move_queue = Vec::new();
+                    move_queue.push(j as i64);
+                } else if temp_val.0 == v {
+                    move_queue.push(j as i64);
                 }
-                score += self.evaluate_window(&window, disc_type);
-            }
-        }
 
-        for c in 0..self.board_columns {
-            let mut col_array: Vec<DiscType> = Vec::new();
-            for i in 0..self.board_rows {
-                col_array.push(game_board.board[i][c]);
-            }
-            for r in 0..self.board_rows - 3 {
-                let mut window: Vec<DiscType> = Vec::new();
-                for i in 0..4 {
-                    window.push(col_array[r + i]);
+                // alpha-beta pruning
+                if v > beta {
+                    move_val = choose(&move_queue);
+                    return (v, move_val);
                 }
-                score += self.evaluate_window(&window, disc_type);
+                alpha = std::cmp::max(alpha, v);
             }
         }
 
-        for r in 0..self.board_rows - 3 {
-            for c in 0..self.board_columns - 3 {
-                let mut window: Vec<DiscType> = Vec::new();
-                for i in 0..4 {
-                    window.push(game_board.board[r + i][c + i]);
-                }
-                score += self.evaluate_window(&window, disc_type);
-            }
-        }
-
-        for r in 0..self.board_rows - 3 {
-            for c in 0..self.board_columns - 3 {
-                let mut window: Vec<DiscType> = Vec::new();
-                for i in 0..4 {
-                    window.push(game_board.board[r + 3 - i][c + i]);
-                }
-                score += self.evaluate_window(&window, disc_type);
-            }
-        }
-
-        score
+        move_val = choose(&move_queue);
+        return (v, move_val);
     }
 
-    fn minmax(&self, board: Board, depth: usize, is_ai: bool) -> (usize, isize) {
-        if board.is_connect4(DiscType::Red) {
-            return (66, std::isize::MIN)
-        } else if board.is_connect4(DiscType::Yellow) {
-            return (66, std::isize::MAX)
-        } else if board.is_full() {
-            return (66, 0)
-        } else if depth == 0 {
-            return (66, self.score_position(&board, DiscType::Yellow))
-        }
+    pub fn min_state(
+        &self, 
+        ai_move_value: i64, 
+        state: &Vec<Vec<i64>>, 
+        depth: i64, 
+        alpha: i64, 
+        mut beta: i64
+    ) -> (i64, i64) {
+        let mut v = 100000000007;
+        let move_val: i64;
+        let mut move_queue = Vec::new();
 
-        let valid_columns = board.get_valid_columns();
-        if is_ai {
-            let mut score = std::isize::MIN;
-            let mut column: usize = *valid_columns.choose(&mut rand::thread_rng()).unwrap();
-            for col in valid_columns {
-                let mut clone_board = board.clone();
-                clone_board.place_disc(col, DiscType::Yellow);
-                let new_score = self.minmax(clone_board, depth - 1, !is_ai).1;
-                if new_score > score {
-                    score = new_score;
-                    column = col;
+        for j in 0..self.board_columns {
+            let temp_state = fill_map(state, j, ai_move_value * -1, self.board_rows, self.board_columns);
+            if temp_state[0][0] != ERR_CODE {
+                let temp_val = self.value(ai_move_value, &temp_state, depth, alpha, beta);
+                if temp_val.0 < v {
+                    v = temp_val.0;
+                    move_queue = Vec::new();
+                    move_queue.push(j as i64);
+                } else if temp_val.0 == v {
+                    move_queue.push(j as i64);
                 }
-                let alpha = std::cmp::max(self.alpha, score);
-                if alpha >= self.beta {
-                    break;
+
+                // alpha-beta pruning
+                if v < alpha {
+                    move_val = choose(&move_queue);
+                    return (v, move_val);
                 }
+                beta = std::cmp::min(beta, v);
             }
-            return (column, score)
-        } else {
-            let mut score = std::isize::MAX;
-            let mut column: usize = *valid_columns.choose(&mut rand::thread_rng()).unwrap();
-            for col in valid_columns {
-                let mut clone_board = board.clone();
-                clone_board.place_disc(col, DiscType::Red);
-                let new_score = self.minmax(clone_board, depth - 1, !is_ai).1;
-                if new_score < score {
-                    score = new_score;
-                    column = col;
-                }
-                let beta = std::cmp::min(self.beta, score);
-                if self.alpha >= beta {
-                    break;
-                }
-            }
-            return (column, score)
         }
+        move_val = choose(&move_queue);
+
+        return (v, move_val);
     }
 }
 
 pub struct TootOttoAI {
     board_rows: usize,
     board_columns: usize,
-    difficulty: Difficulty
+    difficulty: Difficulty,
+    score_board: Vec<Vec<i64>>
 }
 
 impl TootOttoAI {
     pub fn new(board_rows: usize, board_columns: usize, difficulty: Difficulty) -> Self {
+        let map: Vec<Vec<i64>> = vec![vec![0; board_columns]; board_rows];
+
         Self {
             board_rows,
             board_columns,
-            difficulty
+            difficulty,
+            score_board: map,
         }
     }
 
@@ -295,23 +385,28 @@ impl TootOttoAI {
         }
     }
 
-    pub fn find_best_move(&self, game: BoardGame) -> (usize, DiscType) {
+    fn convert_board(&mut self, board: Board) {
+        for y in 0..self.board_rows {
+            for x in 0..self.board_columns {
+                self.score_board[y][x] = if board.board[y][x] == DiscType::T {
+                    1
+                } else if board.board[y][x] == DiscType::O {
+                    -1
+                } else {
+                    0
+                }
+            }
+        }
+    }
+
+    pub fn find_best_move(&mut self, game: BoardGame) -> (usize, DiscType) {
+        self.convert_board(game.game_board.clone());
         match self.difficulty {
             Difficulty::Easy => {
                 // pure random
                 return self.random_gen(game.game_board.clone())
             },
             Difficulty::Medium => {
-                // find if there's a winning move for AI
-                // if not choose randomly
-                let (winning_move, disc_type) = self.find_winning_move(game.game_board.clone());
-                if winning_move >= 0 {
-                    return (winning_move as usize, disc_type)
-                } else {
-                    return self.random_gen(game.game_board.clone())
-                }
-            }
-            Difficulty::Hard => {
                 // find if there's a winning move for AI
                 let (winning_move, disc_type) = self.find_winning_move(game.game_board.clone());
                 if winning_move >= 0 {
@@ -325,7 +420,15 @@ impl TootOttoAI {
                     }
                 }
             },
-            
+            _ => { // Hard or Insane
+                let choice_val = self.max_state(&self.score_board, 0, -100000000007, 100000000007);
+                let (column, letter) = choice_val.1;
+                if column < 0 || column as usize > self.board_columns {
+                    return self.random_gen(game.game_board.clone());
+                }
+                let ret_let = if letter == 'T' { DiscType::T } else { DiscType::O };
+                return (column as usize, ret_let);
+            }
         }
     }
 
@@ -380,4 +483,130 @@ impl TootOttoAI {
 
         (-1, DiscType::Empty)
     }
+
+    pub fn value(
+        &self, 
+        state: &Vec<Vec<i64>>, 
+        depth: i64, 
+        alpha: i64, 
+        beta: i64
+    ) -> i64 {
+        let val = check_state(state, self.board_rows, self.board_columns, true);
+        // depth is a big lower as the AI is slow
+        let max_depth = match self.difficulty {
+            Difficulty::Hard => 2,
+            Difficulty::Insane => 3,
+            _ => 1,
+        };
+        if depth >= max_depth { // if slow (or memory consumption is high), lower the value
+            // if win, value = +inf
+            let (win_val, chain_val) = val; 
+            let mut ret_val = chain_val;
+
+            // If it lead to winning, then do it
+            if win_val == 4 { // AI win, AI wants to win of course
+                ret_val = REWARD;
+            } else if win_val == 4 { // AI lose, AI hates losing
+                ret_val = REWARD * -1;
+            }
+            ret_val -= depth * depth;
+
+            return ret_val;
+        }
+
+        let win = val.0;
+        // if already won, then return the value right away
+        if win == 4 { // AI win, AI wants to win of course
+            return REWARD - depth * depth;
+        }
+        if win == -4 {
+            // AI lose, AI hates losing
+            return REWARD * -1 - depth * depth;
+        }
+
+        if depth % 2 == 0 {
+            return self.min_state(state, depth + 1, alpha, beta).0;
+        } else {
+            return self.max_state(state, depth + 1, alpha, beta).0;
+        }
+    }
+
+    pub fn max_state(
+        &self,
+        state: &Vec<Vec<i64>>,
+        depth: i64,
+        mut alpha: i64,
+        beta: i64,
+    ) -> (i64, (i64, char)) {
+        let mut v = -100000000007;
+        let new_move: (i64, char);
+        let mut move_queue = Vec::new();
+
+        for letter in &['T', 'O'] {
+            for j in 0..self.board_columns {
+                let move_value = if *letter == 'T' { 1 } else { -1 };
+                let temp_state = fill_map(state, j, move_value, self.board_rows, self.board_columns);
+                if temp_state[0][0] != ERR_CODE {
+                    let temp_val = self.value(&temp_state, depth, alpha, beta);
+                    if temp_val > v {
+                        v = temp_val;
+                        move_queue = Vec::new();
+                        move_queue.push((j as i64, *letter));
+                    } else if temp_val == v {
+                        move_queue.push((j as i64, *letter));
+                    }
+
+                    // alpha-beta pruning
+                    if v > beta {
+                        new_move = choose(&move_queue);
+                        return (v, new_move);
+                    }
+                    alpha = std::cmp::max(alpha, v);
+                }
+            }
+        }
+        new_move = choose(&move_queue);
+
+        return (v, new_move);
+    }
+
+    pub fn min_state(
+        &self,
+        state: &Vec<Vec<i64>>,
+        depth: i64,
+        alpha: i64,
+        mut beta: i64,
+    ) -> (i64, (i64, char)) {
+        let mut v = 100000000007;
+        let new_move: (i64, char);
+        let mut move_queue = Vec::new();
+
+        for letter in &['T', 'O'] {
+            for j in 0..self.board_columns {
+                let move_value = if *letter == 'T' { 1 } else { -1 };
+                let temp_state = fill_map(state, j, move_value, self.board_rows, self.board_columns);
+                if temp_state[0][0] != ERR_CODE {
+                    let temp_val = self.value(&temp_state, depth, alpha, beta);
+                    if temp_val < v {
+                        v = temp_val;
+                        move_queue = Vec::new();
+                        move_queue.push((j as i64, *letter));
+                    } else if temp_val == v {
+                        move_queue.push((j as i64, *letter));
+                    }
+
+                    // alpha-beta pruning
+                    if v < alpha {
+                        new_move = choose(&move_queue);
+                        return (v, new_move);
+                    }
+                    beta = std::cmp::min(beta, v);
+                }
+            }
+        }
+        new_move = choose(&move_queue);
+
+        return (v, new_move);
+    }
+
 }

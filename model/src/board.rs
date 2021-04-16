@@ -99,7 +99,8 @@ impl Board {
 
     pub fn is_toot_or_otto(&self) -> GameEvent {
         let (mut horizontal_count, mut vertical_count, mut left_diagonal_count, mut right_diagonal_count);
-
+        let mut is_toot = false;
+        let mut is_otto = false;
 
         for i in 0..self.board_rows {
             for j in 0..self.board_columns {
@@ -142,9 +143,9 @@ impl Board {
                     right_diagonal_count[2] == DiscType::O && 
                     right_diagonal_count[3] == DiscType::T
                 {
-                    return GameEvent::IsTOOT
-                } else if 
-                    horizontal_count[0] == DiscType::O && 
+                    is_toot = true;
+                } 
+                if  horizontal_count[0] == DiscType::O && 
                     horizontal_count[1] == DiscType::T &&
                     horizontal_count[2] == DiscType::T && 
                     horizontal_count[3] == DiscType::O ||
@@ -161,12 +162,20 @@ impl Board {
                     right_diagonal_count[2] == DiscType::T && 
                     right_diagonal_count[3] == DiscType::O
                 {
-                    return GameEvent::IsOTTO
+                    is_otto = true;
                 }
             }
         }
 
-        GameEvent::Ongoing
+        if is_toot && is_otto { // when a piece matches BOTH "TOOT" and "OTTO"
+            return GameEvent::Draw
+        } else if is_toot {
+            return GameEvent::IsTOOT
+        } else if is_otto {
+            return GameEvent::IsOTTO
+        } else {
+            return GameEvent::Ongoing
+        }
     }
 }
 
