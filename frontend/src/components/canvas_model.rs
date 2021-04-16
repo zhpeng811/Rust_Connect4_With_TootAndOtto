@@ -136,8 +136,10 @@ impl CanvasModel {
 
                 if self.game_type == GameType::Connect4 {
                     if board[y][x] == DiscType::Red {
+                        text = "R";
                         fg_color = "#ff4136";
                     } else if board[y][x] == DiscType::Yellow {
+                        text = "Y";
                         fg_color = "#ffa500";
                     }
                 } else if self.game_type == GameType::TOOTandOTTO {
