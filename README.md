@@ -15,6 +15,7 @@ Or you can do it in one-shot with
 rustup override set 1.45.0
 ```
 **Make sure the above command is performed at the `frontend` directory of this project, since override sets the current directory to use the rust version**
+
 There may be an issue with wasm-unknown-unknown, to fix run
 ```
 rustup target add wasm32-unknown-unknown
