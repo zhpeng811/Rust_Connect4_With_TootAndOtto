@@ -110,7 +110,7 @@ fn play_connect4_with_human(row: usize, column: usize) {
 
 fn play_toototto_with_computer(row: usize, column: usize) {
     let mut game = BoardGame::new_toot_and_otto(row, column, false);
-    let ai = ai::TootOttoAI::new(row, column, ai::Difficulty::Hard);
+    let mut ai = ai::TootOttoAI::new(row, column, ai::Difficulty::Insane);
 
     loop {
         println!("{}", game.game_board);
