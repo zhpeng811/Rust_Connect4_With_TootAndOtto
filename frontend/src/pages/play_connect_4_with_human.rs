@@ -1,13 +1,17 @@
 use yew::prelude::*;
 use crate::pages::text_input::TextInput;
 use crate::components::canvas_model::CanvasModel;
+use crate::components::alert::alert;
+use yew_components::Select;
 use model::ai::Difficulty;
+use model::board_size::BoardSize;
 
 pub enum Msg {
     StartGame,
     EndGame,
     SetPlayer1Name(String),
     SetPlayer2Name(String),
+    SetBoardSize(BoardSize)
 }
 
 pub struct PlayConnect4WithHuman {
@@ -16,6 +20,7 @@ pub struct PlayConnect4WithHuman {
     game_running: bool,
     disable_button: bool,
     display_board: String,
+    board_size: BoardSize,
     link: ComponentLink<Self>,
 }
 
@@ -30,6 +35,7 @@ impl Component for PlayConnect4WithHuman {
             game_running: false,
             disable_button: false,
             display_board: String::from("none"),
+            board_size: BoardSize::SevenBySix,
             link,
         }
     }
@@ -37,6 +43,10 @@ impl Component for PlayConnect4WithHuman {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::StartGame => {
+                if self.player1_name.len() == 0 || self.player2_name.len() == 0 {
+                    alert("Player name field cannot be empty");
+                    return false
+                }
                 self.game_running = true;
                 self.disable_button = true;
                 self.display_board = String::from("block");
@@ -46,6 +56,9 @@ impl Component for PlayConnect4WithHuman {
             }
             Msg::SetPlayer2Name(name) => {
                 self.player2_name = name;
+            }
+            Msg::SetBoardSize(board_size) => {
+                self.board_size = board_size;
             }
             Msg::EndGame => {
                 self.game_running = false;
@@ -73,12 +86,22 @@ impl Component for PlayConnect4WithHuman {
                         oninput = self.link.callback(Msg::SetPlayer1Name)
                         disabled = {self.disable_button}
                     />
+                    {"\u{00a0}\u{00a0}\u{00a0}\u{00a0}"} // add some spaces between the elements
                     <TextInput 
                         value = self.player2_name.clone()
                         placeholder = "Player 2's Name"
                         oninput = self.link.callback(Msg::SetPlayer2Name)
                         disabled = {self.disable_button}
                     />
+                    {"\u{00a0}\u{00a0}\u{00a0}\u{00a0}"} // add some spaces between the elements
+                    <Select 
+                        <BoardSize>
+                        selected = Some(self.board_size)
+                        options = {BoardSize::to_vec()}
+                        disabled = {self.disable_button}
+                        on_change = self.link.callback(|size: BoardSize| Msg::SetBoardSize(size))
+                    />
+                    {"\u{00a0}\u{00a0}\u{00a0}\u{00a0}"} // add some spaces between the elements
                     <button
                         id = "start-button"
                         onclick= self.link.callback(|_| Msg::StartGame)
@@ -96,8 +119,8 @@ impl Component for PlayConnect4WithHuman {
                         canvas_id = "connect4_human"
                         player1 = self.player1_name.clone()
                         player2 = self.player2_name.clone()
-                        board_rows = 6
-                        board_columns = 7
+                        board_rows = self.board_size.get_row()
+                        board_columns = self.board_size.get_column()
                         text = String::from("")
                         difficulty = Difficulty::Easy // Not used, doesn't matter
                         game_done_cbk=self.link.callback(|_| Msg::EndGame)/>
