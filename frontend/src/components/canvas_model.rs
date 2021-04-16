@@ -279,7 +279,7 @@ impl CanvasModel {
         context.save();
         context.set_font("14pt sans-serif");
         context.set_fill_style_color("#111");
-        context.fill_text(&to_print, 150.0, 20.0, None);
+        context.fill_text(&to_print, 21.0 * self.board_columns as f64, 20.0, None); 
 
         let difficulty = if self.vs_ai {self.props.difficulty.to_string()} else {"N/A".to_string()};
 
@@ -421,6 +421,23 @@ impl Component for CanvasModel {
 
     fn change(&mut self, props: Self::Properties) -> ShouldRender {
         self.props = props;
+        let board_columns = self.props.board_columns.unwrap();
+        let board_rows = self.props.board_rows.unwrap();
+        // update the game if user choose a different board size
+        if board_rows != self.board_rows || board_columns != self.board_columns {
+            self.game = {
+                if self.game_type == GameType::Connect4 {
+                    BoardGame::new_connect4(board_rows, board_columns, self.vs_ai)
+                } else {
+                    BoardGame::new_toot_and_otto(board_rows, board_columns, self.vs_ai)
+                }
+            };
+            self.board_rows = board_rows;
+            self.board_columns = board_columns;
+            self.clear();
+            self.draw_mask();
+        }
+
         // Only TOOT-and-OTTO is allowed to change disc-type / text
         if self.game_type == GameType::TOOTandOTTO {
             self.text = self.props.text.as_ref().unwrap().clone(); 
@@ -437,7 +454,7 @@ impl Component for CanvasModel {
 
     fn view(&self) -> Html {
         html! {
-            <canvas id={&self.canvas_id} height="480" width="640"></canvas>
+            <canvas id={&self.canvas_id} height="640" width="1000"></canvas>
         }
     }
 
