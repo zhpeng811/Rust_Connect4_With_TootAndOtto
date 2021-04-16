@@ -10,12 +10,12 @@ pub enum GameEvent {
     Draw,
     IsTOOT,
     IsOTTO,
-    Neither,
+    Ongoing,
     PlaceColumnFull,
     UnexpectedErr,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum GameType {
     Connect4,
     TOOTandOTTO
@@ -30,6 +30,7 @@ impl ToString for GameType {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct BoardGame {
     pub game_board: Board,
     pub player1: Player,
@@ -71,7 +72,7 @@ impl BoardGame {
         }
     }
 
-    fn get_current_disc_type(&self) -> DiscType {
+    pub fn get_current_disc_type(&self) -> DiscType {
         if self.current_player == 1 {
             self.player1.disc_type
         } else {
@@ -81,10 +82,8 @@ impl BoardGame {
 
     // for TOOT and OTTO
     pub fn change_disc_type(&mut self, disc_type: DiscType) {
-        let player: &mut Player;
-
-        if (self.game_type == GameType::Connect4) {
-            // not allowed to chagne disc type for connect 4
+        if self.game_type == GameType::Connect4 {
+            // not allowed to change disc type for connect 4
             // there should not be a GUI that allows this
             return
         }
@@ -96,13 +95,6 @@ impl BoardGame {
 
     pub fn place_disc(&mut self, column: usize) -> GameEvent {
         self.game_board.place_disc(column, self.get_current_disc_type())
-        // let game_event = self.game_board.place_disc(column, self.get_current_disc_type());
-        // match game_event {
-        //     GameEvent::PlaceSuccess() => {
-        //         self.check()
-        //     },
-        //     _ => return game_event
-        // }
     }
 
     pub fn check(&mut self) -> GameEvent {
@@ -125,7 +117,7 @@ impl BoardGame {
             return GameEvent::Draw
         } else {
             self.switch_turn();
-            return GameEvent::PlaceSuccess(0)
+            return GameEvent::Ongoing
         }
     }
 }

@@ -1,4 +1,5 @@
 #![recursion_limit="2048"]
+#![allow(unused_variables)]
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -83,7 +84,7 @@ impl Model {
             ..
         } = *self;
 
-        let active_class = if navbar_active { "is-active" } else { "" };
+        let _active_class = if navbar_active { "is-active" } else { "" };
 
         html! {
             <div class="nav">
@@ -170,6 +171,5 @@ impl Model {
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
-    // wasm_logger::init(wasm_logger::Config::new(log::Level::Trace));
     yew::start_app::<Model>();
 }

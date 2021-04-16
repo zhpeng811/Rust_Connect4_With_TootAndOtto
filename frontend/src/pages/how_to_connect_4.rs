@@ -6,7 +6,7 @@ impl Component for HowToConnect4 {
     type Message = ();
     type Properties = ();
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(_props: Self::Properties, _link: ComponentLink<Self>) -> Self {
         Self
     }
 

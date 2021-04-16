@@ -2,7 +2,7 @@ use yew::prelude::*;
 use yew::html::InputData;
 use crate::pages::text_input::TextInput;
 use crate::components::canvas_model::CanvasModel;
-use crate::components::ai_difficulty::{Difficulty};
+use model::ai::{Difficulty};
 
 pub enum Msg {
     StartGame,
@@ -45,7 +45,6 @@ impl Component for PlayTOOTOTTOWithHuman {
             Msg::StartGame => {
                 self.disable_button = true;
                 self.game_running = true;
-                self.disable_button = true;
                 self.display_board = String::from("block");
             }
             Msg::SetPlayer1Name(name) => {

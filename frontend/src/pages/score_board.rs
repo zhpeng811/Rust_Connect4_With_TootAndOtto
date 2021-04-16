@@ -79,10 +79,16 @@ impl ScoreBoard {
         }
     }
 
-    fn detail_won_by_all_players_stat(&self) -> Html {
+    fn champion_games_stat(&self, filter_cond: String) -> Html {
         if self.history.len() > 0 {
             let mut map = HashMap::new();
-            self.history.iter().for_each(|history| {
+            self.history.iter().filter(|history| 
+                if filter_cond.len() == 0 {
+                    return true
+                } else {
+                    return history.game_type.eq(&filter_cond)
+                }
+            ).for_each(|history| {
                 *map.entry(history.winner.clone()).or_insert(0) += 1;
             });
             
@@ -115,7 +121,7 @@ impl Component for ScoreBoard {
     type Message = Msg;
     type Properties = ();
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let mut this = Self {
             link,
             history: Vec::new(),
@@ -180,21 +186,53 @@ impl Component for ScoreBoard {
                 </table>
         
                 <br />
-        
+
                 <div>
-                    <h4> {"Details of Games Won by All Players"} </h4>
+                    <h4> {"Champion players for Connect-4"} </h4>
                 </div>
 
                 <table>
                     <tr>
                         <th> {"Sl. No."} </th>
-                        <th> {"Winner or Draw"} </th>
+                        <th> {"Player Name"} </th>
                         <th> {"No. of Wins"} </th>
                     </tr>
                     
-                    { self.detail_won_by_all_players_stat() }
+                    { self.champion_games_stat(String::from("Connect-4")) }
                 </table>
-            
+
+                <br />
+
+                <div>
+                    <h4> {"Champion players for TOOT-and-OTTO"} </h4>
+                </div>
+
+                <table>
+                    <tr>
+                        <th> {"Sl. No."} </th>
+                        <th> {"Player Name"} </th>
+                        <th> {"No. of Wins"} </th>
+                    </tr>
+                    
+                    { self.champion_games_stat(String::from("TOOT-OTTO")) }
+                </table>
+
+                <br />
+
+                <div>
+                    <h4> {"Champion players for All Games"} </h4>
+                </div>
+
+                <table>
+                    <tr>
+                        <th> {"Sl. No."} </th>
+                        <th> {"Player Name"} </th>
+                        <th> {"No. of Wins"} </th>
+                    </tr>
+                    
+                    { self.champion_games_stat(String::from("")) }
+                </table>
+
             </div>
         }
     }
