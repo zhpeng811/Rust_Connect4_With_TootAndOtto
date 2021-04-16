@@ -9,7 +9,8 @@ use crate::disc::{DiscType};
 pub enum Difficulty {
     Easy,
     Medium,
-    Hard
+    Hard,
+    Insane,
 }
 
 // needed to <Select> component display
@@ -19,13 +20,14 @@ impl ToString for Difficulty {
             Difficulty::Easy => String::from("Easy"),
             Difficulty::Medium => String::from("Medium"),
             Difficulty::Hard => String::from("Hard"),
+            Difficulty::Insane => String::from("Insane")
         }
     }
 }
 
 impl Difficulty {
     pub fn to_vec() -> Vec<Difficulty> {
-        vec![Difficulty::Easy, Difficulty::Medium, Difficulty::Hard]
+        vec![Difficulty::Easy, Difficulty::Medium, Difficulty::Hard, Difficulty::Insane]
     }
 }
 
@@ -35,18 +37,21 @@ pub struct Connect4AI {
     max_depth: usize,
     difficulty: Difficulty,
     alpha: isize,
-    beta: isize
+    beta: isize,
+    score_board: Vec<Vec<i64>>
 }
 
 impl Connect4AI {
     pub fn new(board_rows: usize, board_columns: usize, difficulty: Difficulty) -> Self {
+        let mut map: Vec<Vec<i64>> = vec![vec![0; board_columns]; board_rows];
         Self {
             board_rows,
             board_columns,
             max_depth: 6,
             difficulty,
             alpha: std::isize::MIN,
-            beta: std::isize::MAX
+            beta: std::isize::MAX,
+            score_board: map,
         }
     }
 
@@ -58,7 +63,22 @@ impl Connect4AI {
         }
     }
 
-    pub fn find_best_move(&self, game: BoardGame) -> usize {
+    fn convert_board(&mut self, board: Board) {
+        for y in 0..self.board_rows {
+            for x in 0..self.board_columns {
+                self.score_board[y][x] = if board.board[y][x] == DiscType::Red {
+                    1
+                } else if board.board[y][x] == DiscType::Yellow {
+                    -1
+                } else {
+                    0
+                }
+            }
+        }
+    }
+
+    pub fn find_best_move(&mut self, game: BoardGame) -> usize {
+        self.convert_board(game.game_board.clone());
         match self.difficulty {
             Difficulty::Easy => {
                 // pure random
@@ -91,7 +111,16 @@ impl Connect4AI {
                     }
                 }
             },
-            
+            Difficulty::Insane => {
+                let val_choice = self.max_state(-1, &self.score_board, 0, -100000000007, 100000000007);
+                let val = val_choice.0;
+                let choice = val_choice.1;
+                println!("choice: {}", choice);
+                if choice < 0 || choice as usize > self.board_columns {
+                    return self.get_random_val(self.board_columns);
+                }
+                return choice as usize;
+            }
         }
     }
 
@@ -260,6 +289,219 @@ impl Connect4AI {
             return (column, score)
         }
     }
+
+    pub fn value(
+        &self,
+        ai_move_value: i64,
+        state: &Vec<Vec<i64>>,
+        depth: i64,
+        mut alpha: i64,
+        mut beta: i64,
+    ) -> (i64, i64) {
+        let val = self.check_state(state);
+        let max_depth = match self.difficulty {
+            Easy => 1,
+            Medium => 3,
+            Hard => 5,
+            Insane => 5,
+        };
+        if depth >= max_depth {
+            // if slow (or memory consumption is high), lower the value
+            let mut ret_val = 0;
+
+            // if win, value = +inf
+            let win_val = val.0;
+            let chain_val = val.1 * ai_move_value;
+            ret_val = chain_val;
+
+            // If it lead to winning, then do it
+            if win_val == 4 * ai_move_value {
+                // AI win, AI wants to win of course
+                ret_val = 999999;
+            } else if win_val == 4 * ai_move_value * -1 {
+                // AI lose, AI hates losing
+                ret_val = 999999 * -1;
+            }
+            ret_val -= depth * depth;
+
+            return (ret_val, -1);
+        }
+
+        let win = val.0;
+        // if already won, then return the value right away
+        if win == 4 * ai_move_value {
+            // AI win, AI wants to win of course
+            return (999999 - depth * depth, -1);
+        }
+        if win == 4 * ai_move_value * -1 {
+            // AI lose, AI hates losing
+            return (999999 * -1 - depth * depth, -1);
+        }
+
+        if depth % 2 == 0 {
+            return self.min_state(ai_move_value, state, depth + 1, alpha, beta);
+        }
+        return self.max_state(ai_move_value, state, depth + 1, alpha, beta);
+    }
+
+    pub fn max_state(
+        &self,
+        ai_move_value: i64,
+        state: &Vec<Vec<i64>>,
+        depth: i64,
+        mut alpha: i64,
+        mut beta: i64,
+    ) -> (i64, i64) {
+        let mut v = -100000000007;
+        let mut new_move: i64 = -1;
+        let mut move_queue = Vec::new();
+
+        for j in 0..self.board_columns {
+            let temp_state = self.fill_map(state, j, ai_move_value);
+            if temp_state[0][0] != 999 {
+                let temp_val = self.value(ai_move_value, &temp_state, depth, alpha, beta);
+                if temp_val.0 > v {
+                    v = temp_val.0;
+                    new_move = j as i64;
+                    move_queue = Vec::new();
+                    move_queue.push(j);
+                } else if temp_val.0 == v {
+                    move_queue.push(j);
+                }
+
+                // alpha-beta pruning
+                if v > beta {
+                    new_move = self.choose(&move_queue);
+                    return (v, new_move);
+                }
+                alpha = std::cmp::max(alpha, v);
+            }
+        }
+        new_move = self.choose(&move_queue);
+        println!("max state moves: {:?}", move_queue);
+        return (v, new_move);
+    }
+
+    pub fn min_state(
+        &self,
+        ai_move_value: i64,
+        state: &Vec<Vec<i64>>,
+        depth: i64,
+        mut alpha: i64,
+        mut beta: i64,
+    ) -> (i64, i64) {
+        let mut v = 100000000007;
+        let mut new_move: i64 = -1;
+        let mut move_queue = Vec::new();
+
+        for j in 0..7 {
+            let temp_state = self.fill_map(state, j, ai_move_value * -1);
+            if temp_state[0][0] != 999 {
+                let temp_val = self.value(ai_move_value, &temp_state, depth, alpha, beta);
+                if temp_val.0 < v {
+                    v = temp_val.0;
+                    new_move = j as i64;
+                    move_queue = Vec::new();
+                    move_queue.push(j);
+                } else if temp_val.0 == v {
+                    move_queue.push(j);
+                }
+
+                // alpha-beta pruning
+                if v < alpha {
+                    new_move = self.choose(&move_queue);
+                    return (v, new_move);
+                }
+                beta = std::cmp::min(beta, v);
+            }
+        }
+        new_move = self.choose(&move_queue);
+
+        return (v, new_move);
+    }
+
+    pub fn fill_map(&self, new_state: &Vec<Vec<i64>>, column: usize, value: i64) -> Vec<Vec<i64>> {
+        let mut temp_map = new_state.clone();
+        if temp_map[0][column] != 0 || column > 6 {
+            temp_map[0][0] = 999; // error code
+        }
+
+        let mut done = false;
+        let mut row = 0;
+
+        for i in 0..5 {
+            if temp_map[i + 1][column] != 0 {
+                done = true;
+                row = i;
+                break;
+            }
+        }
+        if !done {
+            row = 5;
+        }
+        temp_map[row][column] = value;
+        return temp_map;
+    }
+
+    pub fn get_random_val(&self, val: usize) -> usize {
+        let mut rng = rand::thread_rng();
+        let base: f64 = rng.gen();
+        let max_val = val as f64;
+
+        return (base * max_val).floor() as usize;
+    }
+
+    pub fn choose(&self, choice: &Vec<usize>) -> i64 {
+        let index = self.get_random_val(choice.len());
+        return choice[index] as i64;
+    }
+
+    pub fn check_state(&self, state: &Vec<Vec<i64>>) -> (i64, i64) {
+        let mut win_val = 0;
+        let mut chain_val = 0;
+        let (mut temp_r, mut temp_b, mut temp_br, mut temp_tr) = (0, 0, 0, 0);
+        for i in 0..6 {
+            for j in 0..7 {
+                temp_r = 0;
+                temp_b = 0;
+                temp_br = 0;
+                temp_tr = 0;
+                for k in 0..=3 {
+                    if j + k < 7 {
+                        temp_r += state[i][j + k];
+                    }
+
+                    if i + k < 6 {
+                        temp_b += state[i + k][j];
+                    }
+
+                    if i + k < 6 && j + k < 7 {
+                        temp_br += state[i + k][j + k];
+                    }
+
+                    if i >= k && j + k < 7 {
+                        temp_tr += state[i - k][j + k];
+                    }
+                }
+                chain_val += temp_r * temp_r * temp_r;
+                chain_val += temp_b * temp_b * temp_b;
+                chain_val += temp_br * temp_br * temp_br;
+                chain_val += temp_tr * temp_tr * temp_tr;
+
+                if temp_r.abs() == 4 {
+                    win_val = temp_r;
+                } else if temp_b.abs() == 4 {
+                    win_val = temp_b;
+                } else if temp_br.abs() == 4 {
+                    win_val = temp_br;
+                } else if temp_tr.abs() == 4 {
+                    win_val = temp_tr;
+                }
+            }
+        }
+
+        return (win_val, chain_val);
+    }
 }
 
 pub struct TootOttoAI {
@@ -325,7 +567,10 @@ impl TootOttoAI {
                     }
                 }
             },
-            
+            Difficulty::Insane => {
+                // TODO
+                return self.random_gen(game.game_board.clone())
+            }
         }
     }
 

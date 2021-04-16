@@ -22,7 +22,7 @@ fn read_input() -> usize {
 
 fn play_connect4_with_computer(row: usize, column: usize) {
     let mut game = BoardGame::new_connect4(row, column, true);
-    let ai = ai::Connect4AI::new(row, column, ai::Difficulty::Hard);
+    let mut ai = ai::Connect4AI::new(row, column, ai::Difficulty::Insane);
     loop {
         println!("{}", game.game_board);
         let column_to_place: usize;
