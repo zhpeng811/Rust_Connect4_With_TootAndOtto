@@ -14,7 +14,7 @@ Or you can do it in one-shot with
 ```
 rustup override set 1.45.0
 ```
-This should be used in the `frontend` directory since override sets the current directory to use the rust version.
+**Make sure the above command is performed at the `frontend` directory of this project, since override sets the current directory to use the rust version**
 There may be an issue with wasm-unknown-unknown, to fix run
 ```
 rustup target add wasm32-unknown-unknown
@@ -28,7 +28,7 @@ Backend is used to get and store the histories of games, to run:
 ```
 rustup override set nightly
 ```
-**Make sure the above command is performed at the root directory of this project**
+**Make sure the above command is performed at the `backend` directory of this project, since override sets the current directory to use the rust version**
 
 4. Run the backend by switching to the `backend` folder and use
 ```
