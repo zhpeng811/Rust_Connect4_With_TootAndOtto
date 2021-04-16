@@ -4,7 +4,6 @@ use yew::prelude::*;
 use yew::services::fetch::{FetchService, FetchTask, Request, Response};
 use yew::format::{Json, Nothing};
 use serde::{Deserialize, Serialize};
-use crate::components::drop_button::DropButton;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct HistoryInfo {
