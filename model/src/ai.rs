@@ -237,8 +237,8 @@ impl Connect4AI {
     ) -> (i64, i64) {
         let val = check_state(state, self.board_rows, self.board_columns, false);
         let max_depth = match self.difficulty {
-            Difficulty::Hard => 3,
-            Difficulty::Insane => 4,
+            Difficulty::Hard => 2,
+            Difficulty::Insane => 3,
             _ => 1,
         };
         if depth >= max_depth { // if slow (or memory consumption is high), lower the value
