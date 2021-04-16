@@ -76,6 +76,57 @@ fn choose<T: Copy>(choice: &Vec<T>) -> T {
     return choice[index];
 }
 
+pub fn check_state(state: &Vec<Vec<i64>>, board_rows: usize, board_columns: usize, is_sign: bool) -> (i64, i64) {
+    let mut win_val = 0;
+    let mut chain_val = 0;
+    let (mut temp_r, mut temp_b, mut temp_br, mut temp_tr);
+    for i in 0..board_rows {
+        for j in 0..board_columns {
+            temp_r = 0;
+            temp_b = 0;
+            temp_br = 0;
+            temp_tr = 0;
+            for k in 0..=3 {
+                let sign: i64 = {
+                    if is_sign {if k == 0 || k == 3 { -1 } else { 1 }}
+                    else { 1 }
+                };
+                if j + k < board_columns {
+                    temp_r += sign * state[i][j + k];
+                }
+
+                if i + k < board_rows {
+                    temp_b += sign * state[i + k][j];
+                }
+
+                if i + k < board_rows && j + k < board_columns {
+                    temp_br += sign * state[i + k][j + k];
+                }
+
+                if i >= k && j + k < board_columns  {
+                    temp_tr += sign * state[i - k][j + k];
+                }
+            }
+            chain_val += temp_r * temp_r * temp_r;
+            chain_val += temp_b * temp_b * temp_b;
+            chain_val += temp_br * temp_br * temp_br;
+            chain_val += temp_tr * temp_tr * temp_tr;
+
+            if temp_r.abs() == 4 {
+                win_val = temp_r;
+            } else if temp_b.abs() == 4 {
+                win_val = temp_b;
+            } else if temp_br.abs() == 4 {
+                win_val = temp_br;
+            } else if temp_tr.abs() == 4 {
+                win_val = temp_tr;
+            }
+        }
+    }
+
+    return (win_val, chain_val);
+}
+
 pub struct Connect4AI {
     board_rows: usize,
     board_columns: usize,
@@ -85,7 +136,7 @@ pub struct Connect4AI {
 
 impl Connect4AI {
     pub fn new(board_rows: usize, board_columns: usize, difficulty: Difficulty) -> Self {
-        let mut map: Vec<Vec<i64>> = vec![vec![0; board_columns]; board_rows];
+        let map: Vec<Vec<i64>> = vec![vec![0; board_columns]; board_rows];
         Self {
             board_rows,
             board_columns,
@@ -139,7 +190,7 @@ impl Connect4AI {
             }
             _ => { // Hard or Insane, use minmax algorithm with alpha-beta pruning
                 let choice_val = self.max_state(-1, &self.score_board, 0, -100000000007, 100000000007);
-                let (val, choice) = choice_val;
+                let choice = choice_val.1;
                 if choice < 0 || choice as usize > self.board_columns {
                     return self.random_gen(game.game_board.clone());
                 }
@@ -181,22 +232,20 @@ impl Connect4AI {
         ai_move_value: i64,
         state: &Vec<Vec<i64>>,
         depth: i64,
-        mut alpha: i64,
-        mut beta: i64,
+        alpha: i64,
+        beta: i64,
     ) -> (i64, i64) {
-        let val = self.check_state(state);
+        let val = check_state(state, self.board_rows, self.board_columns, false);
         let max_depth = match self.difficulty {
             Difficulty::Hard => 3,
             Difficulty::Insane => 4,
             _ => 1,
         };
         if depth >= max_depth { // if slow (or memory consumption is high), lower the value
-            let mut ret_value = 0;
-
             // if win, value = +inf
             let win_val = val.0;
             let chain_val = val.1 * ai_move_value;
-            ret_value = chain_val;
+            let mut ret_value = chain_val;
 
             // If it lead to winning, then do it
             if win_val == 4 * ai_move_value { // AI win, AI wants to win of course
@@ -230,10 +279,10 @@ impl Connect4AI {
         state: &Vec<Vec<i64>>,
         depth: i64,
         mut alpha: i64,
-        mut beta: i64,
+        beta: i64,
     ) -> (i64, i64) {
         let mut v = -100000000007;
-        let mut move_val: i64 = -1;
+        let move_val: i64;
         let mut move_queue = Vec::new();
 
         for j in 0..self.board_columns {
@@ -242,7 +291,6 @@ impl Connect4AI {
                 let temp_val = self.value(ai_move_value, &temp_state, depth, alpha, beta);
                 if temp_val.0 > v {
                     v = temp_val.0;
-                    move_val = j as i64;
                     move_queue = Vec::new();
                     move_queue.push(j as i64);
                 } else if temp_val.0 == v {
@@ -262,9 +310,16 @@ impl Connect4AI {
         return (v, move_val);
     }
 
-    pub fn min_state(&self, ai_move_value: i64, state: &Vec<Vec<i64>>, depth: i64, mut alpha: i64, mut beta: i64) -> (i64, i64) {
+    pub fn min_state(
+        &self, 
+        ai_move_value: i64, 
+        state: &Vec<Vec<i64>>, 
+        depth: i64, 
+        alpha: i64, 
+        mut beta: i64
+    ) -> (i64, i64) {
         let mut v = 100000000007;
-        let mut move_val: i64 = -1;
+        let move_val: i64;
         let mut move_queue = Vec::new();
 
         for j in 0..self.board_columns {
@@ -273,7 +328,6 @@ impl Connect4AI {
                 let temp_val = self.value(ai_move_value, &temp_state, depth, alpha, beta);
                 if temp_val.0 < v {
                     v = temp_val.0;
-                    move_val = j as i64;
                     move_queue = Vec::new();
                     move_queue.push(j as i64);
                 } else if temp_val.0 == v {
@@ -292,53 +346,6 @@ impl Connect4AI {
 
         return (v, move_val);
     }
-
-    pub fn check_state(&self, state: &Vec<Vec<i64>>) -> (i64, i64) {
-        let mut win_val = 0;
-        let mut chain_val = 0;
-        let (mut temp_r, mut temp_b, mut temp_br, mut temp_tr) = (0, 0, 0, 0);
-        for i in 0..self.board_rows {
-            for j in 0..self.board_columns {
-                temp_r = 0;
-                temp_b = 0;
-                temp_br = 0;
-                temp_tr = 0;
-                for k in 0..=3 {
-                    if j + k < self.board_columns {
-                        temp_r += state[i][j + k];
-                    }
-
-                    if i + k < self.board_rows {
-                        temp_b += state[i + k][j];
-                    }
-
-                    if i + k < self.board_rows && j + k < self.board_columns {
-                        temp_br += state[i + k][j + k];
-                    }
-
-                    if i >= k && j + k < self.board_columns  {
-                        temp_tr += state[i - k][j + k];
-                    }
-                }
-                chain_val += temp_r * temp_r * temp_r;
-                chain_val += temp_b * temp_b * temp_b;
-                chain_val += temp_br * temp_br * temp_br;
-                chain_val += temp_tr * temp_tr * temp_tr;
-
-                if temp_r.abs() == 4 {
-                    win_val = temp_r;
-                } else if temp_b.abs() == 4 {
-                    win_val = temp_b;
-                } else if temp_br.abs() == 4 {
-                    win_val = temp_br;
-                } else if temp_tr.abs() == 4 {
-                    win_val = temp_tr;
-                }
-            }
-        }
-
-        return (win_val, chain_val);
-    }
 }
 
 pub struct TootOttoAI {
@@ -350,7 +357,7 @@ pub struct TootOttoAI {
 
 impl TootOttoAI {
     pub fn new(board_rows: usize, board_columns: usize, difficulty: Difficulty) -> Self {
-        let mut map: Vec<Vec<i64>> = vec![vec![0; board_columns]; board_rows];
+        let map: Vec<Vec<i64>> = vec![vec![0; board_columns]; board_rows];
 
         Self {
             board_rows,
@@ -415,7 +422,7 @@ impl TootOttoAI {
             },
             _ => { // Hard or Insane
                 let choice_val = self.max_state(&self.score_board, 0, -100000000007, 100000000007);
-                let (val, (column, letter)) = choice_val;
+                let (column, letter) = choice_val.1;
                 if column < 0 || column as usize > self.board_columns {
                     return self.random_gen(game.game_board.clone());
                 }
@@ -477,54 +484,14 @@ impl TootOttoAI {
         (-1, DiscType::Empty)
     }
 
-    pub fn check_state(&self, state: &Vec<Vec<i64>>) -> (i64, i64) {
-        let mut win_val = 0;
-        let mut chain_val = 0;
-        let (mut temp_r, mut temp_b, mut temp_br, mut temp_tr) = (0, 0, 0, 0);
-        for i in 0..self.board_rows {
-            for j in 0..self.board_columns {
-                temp_r = 0;
-                temp_b = 0;
-                temp_br = 0;
-                temp_tr = 0;
-                for k in 0..=3 {
-                    let sign: i64 = if k == 0 || k == 3 { -1 } else { 1 };
-                    if j + k < self.board_columns {
-                        temp_r += sign * state[i][j + k];
-                    }
-                    if i + k < self.board_rows {
-                        temp_b += sign * state[i + k][j];
-                    }
-                    if i + k < self.board_rows && j + k < self.board_columns {
-                        temp_br += sign * state[i + k][j + k];
-                    }
-
-                    if i >= k && j + k < self.board_columns {
-                        temp_tr += sign * state[i - k][j + k];
-                    }
-                }
-
-                chain_val += temp_r * temp_r * temp_r;
-                chain_val += temp_b * temp_b * temp_b;
-                chain_val += temp_br * temp_br * temp_br;
-                chain_val += temp_tr * temp_tr * temp_tr;
-
-                if temp_r.abs() == 4 {
-                    win_val = temp_r;
-                } else if temp_b.abs() == 4 {
-                    win_val = temp_b;
-                } else if temp_br.abs() == 4 {
-                    win_val = temp_br;
-                } else if temp_tr.abs() == 4 {
-                    win_val = temp_tr;
-                }
-            }
-        }
-        return (win_val, chain_val);
-    }
-
-    pub fn value(&self, state: &Vec<Vec<i64>>, depth: i64, mut alpha: i64, mut beta: i64) -> i64 {
-        let val = self.check_state(state);
+    pub fn value(
+        &self, 
+        state: &Vec<Vec<i64>>, 
+        depth: i64, 
+        alpha: i64, 
+        beta: i64
+    ) -> i64 {
+        let val = check_state(state, self.board_rows, self.board_columns, true);
         // depth is a big lower as the AI is slow
         let max_depth = match self.difficulty {
             Difficulty::Hard => 2,
@@ -532,11 +499,9 @@ impl TootOttoAI {
             _ => 1,
         };
         if depth >= max_depth { // if slow (or memory consumption is high), lower the value
-            let mut ret_val = 0;
-
             // if win, value = +inf
             let (win_val, chain_val) = val; 
-            ret_val = chain_val;
+            let mut ret_val = chain_val;
 
             // If it lead to winning, then do it
             if win_val == 4 { // AI win, AI wants to win of course
@@ -552,11 +517,11 @@ impl TootOttoAI {
         let win = val.0;
         // if already won, then return the value right away
         if win == 4 { // AI win, AI wants to win of course
-            return (REWARD - depth * depth);
+            return REWARD - depth * depth;
         }
         if win == -4 {
             // AI lose, AI hates losing
-            return (-1 * REWARD - depth * depth);
+            return REWARD * -1 - depth * depth;
         }
 
         if depth % 2 == 0 {
@@ -571,10 +536,10 @@ impl TootOttoAI {
         state: &Vec<Vec<i64>>,
         depth: i64,
         mut alpha: i64,
-        mut beta: i64,
+        beta: i64,
     ) -> (i64, (i64, char)) {
         let mut v = -100000000007;
-        let mut new_move: (i64, char) = (-1, ' ');
+        let new_move: (i64, char);
         let mut move_queue = Vec::new();
 
         for letter in &['T', 'O'] {
@@ -585,11 +550,10 @@ impl TootOttoAI {
                     let temp_val = self.value(&temp_state, depth, alpha, beta);
                     if temp_val > v {
                         v = temp_val;
-                        new_move = (j as i64, *letter);
                         move_queue = Vec::new();
                         move_queue.push((j as i64, *letter));
                     } else if temp_val == v {
-                        move_queue.push(((j as i64, *letter)));
+                        move_queue.push((j as i64, *letter));
                     }
 
                     // alpha-beta pruning
@@ -606,16 +570,15 @@ impl TootOttoAI {
         return (v, new_move);
     }
 
-    // TODO - add letter choice to search
     pub fn min_state(
         &self,
         state: &Vec<Vec<i64>>,
         depth: i64,
-        mut alpha: i64,
+        alpha: i64,
         mut beta: i64,
     ) -> (i64, (i64, char)) {
         let mut v = 100000000007;
-        let mut new_move: (i64, char) = (-1, ' ');
+        let new_move: (i64, char);
         let mut move_queue = Vec::new();
 
         for letter in &['T', 'O'] {
@@ -626,7 +589,6 @@ impl TootOttoAI {
                     let temp_val = self.value(&temp_state, depth, alpha, beta);
                     if temp_val < v {
                         v = temp_val;
-                        new_move = (j as i64, *letter);
                         move_queue = Vec::new();
                         move_queue.push((j as i64, *letter));
                     } else if temp_val == v {
