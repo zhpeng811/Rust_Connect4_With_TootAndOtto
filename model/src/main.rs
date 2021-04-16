@@ -79,6 +79,10 @@ fn play_connect4_with_human(row: usize, column: usize) {
         println!("please type the column that you wish to insert your piece: ");
 
         let column_to_place = read_input();
+        if column_to_place >= column {
+            println!("index out of bound, try again");
+            continue;
+        }
         match game.place_disc(column_to_place) {
             GameEvent::PlaceSuccess(_) => {
                 match game.check() {
@@ -125,6 +129,9 @@ fn play_toototto_with_computer(row: usize, column: usize) {
                 continue;
             } else if column_to_place == 466 {
                 game.change_disc_type(DiscType::O);
+                continue;
+            } else if column_to_place >= column {
+                println!("index out of bound, try again");
                 continue;
             }
         } else {
@@ -184,6 +191,9 @@ fn play_toototto_with_human(row: usize, column: usize) {
             continue;
         } else if column_to_place == 466 {
             game.change_disc_type(DiscType::O);
+            continue;
+        } else if column_to_place >= column {
+            println!("index out of bound, try again");
             continue;
         }
 
