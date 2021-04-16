@@ -230,7 +230,7 @@ impl CanvasModel {
                 self.paused = false;
                 self.action(best_move, true);
             } else if self.vs_ai && self.game_type == GameType::TOOTandOTTO && self.game.current_player == 2 {
-                let toototto_ai = TootOttoAI::new(self.board_rows, self.board_columns, self.props.difficulty);
+                let mut toototto_ai = TootOttoAI::new(self.board_rows, self.board_columns, self.props.difficulty);
                 let (best_move, disc_type) = toototto_ai.find_best_move(self.game.clone());
 
                 let current_disc_type = self.game.get_current_disc_type(); // record the current disc type
