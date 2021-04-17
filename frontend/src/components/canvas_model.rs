@@ -201,8 +201,10 @@ impl CanvasModel {
         // log::info!("animating {}", row);
         let mut fg_color = "transparent";
         if self.game.current_player == 1 && self.game_type == GameType::Connect4 {
+            self.text = String::from("R");
             fg_color = "#ff4136";
         } else if self.game.current_player == 2 && self.game_type == GameType::Connect4 {
+            self.text = String::from("Y");
             fg_color = "#ffa500";
         } else if self.game_type == GameType::TOOTandOTTO {
             fg_color = "#99ffcc";

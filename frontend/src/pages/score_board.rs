@@ -2,7 +2,7 @@ use yew::prelude::*;
 use yew::services::fetch::{FetchService, FetchTask, Request, Response};
 use yew::format::Json;
 use std::collections::HashMap;
-use crate::pages::game_history::{HistoryInfo, Msg};
+use crate::pages::game_history::HistoryInfo;
 
 // this Struct and its impelementation is very similar to GameHistory in game_history.rs
 // only the stats functions and htmls are different 
@@ -10,6 +10,12 @@ pub struct ScoreBoard {
     link: ComponentLink<Self>,
     history: Vec<HistoryInfo>,
     fetch_task: Option<FetchTask>,
+}
+
+pub enum Msg {
+    FetchSuccess(Vec<HistoryInfo>),
+    FetchDataError,
+    FetchFailed,
 }
 
 impl ScoreBoard {

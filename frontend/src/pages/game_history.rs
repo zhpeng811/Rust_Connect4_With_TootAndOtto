@@ -1,8 +1,8 @@
 // code skeleton from yew documentation: https://yew.rs/docs/en/next/concepts/services/fetch
-
+use anyhow::Error;
 use yew::prelude::*;
 use yew::services::fetch::{FetchService, FetchTask, Request, Response};
-use yew::format::Json;
+use yew::format::{Json, Nothing};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -25,6 +25,9 @@ pub enum Msg {
     FetchSuccess(Vec<HistoryInfo>),
     FetchDataError,
     FetchFailed,
+    PostDrop,
+    PostSuccess,
+    PostFailed,
 }
 
 impl GameHistory {
@@ -100,6 +103,29 @@ impl Component for GameHistory {
             }
             Msg::FetchFailed => log::info!("fetching history failed"),
             Msg::FetchDataError => log::info!("fetched data contains error"),
+            Msg::PostDrop => {
+                // create callback for POST request to backend
+                let callback = self.link.callback(move |response: Response<Result<String, Error>>| {
+                    if response.status().is_success() {
+                        Msg::PostSuccess
+                    } else {
+                        Msg::PostFailed
+                    }
+                });
+
+                // create the POST request
+                let request = Request::delete("http://127.0.0.1:8000/history")
+                    .body(Nothing)
+                    .unwrap();
+
+                // send the POST request
+                self.fetch_task = FetchService::fetch(request, callback).ok();
+            },
+            Msg::PostSuccess => {
+                log::info!("drop collection successful");
+                self.fetch_task = Some(self.fetch());
+            },
+            Msg::PostFailed => log::info!("failed to drop collection"),
         }
         true
     }
@@ -113,7 +139,7 @@ impl Component for GameHistory {
             <div class="w3-container" id="services" style="margin-top:75px">
                 <h5 class="w3-xxxlarge w3-text-red"><b>{"Game History"}</b></h5>
                 <hr style="width:50px;border:5px solid red" class="w3-round" />
-                
+                <button onclick=self.link.callback(|_| Msg::PostDrop) style="margin-bottom: 1.5em">{"Clear Game History"}</button>
                 <table>
                     <tr>
                         <th>{"Game ID"}</th>
