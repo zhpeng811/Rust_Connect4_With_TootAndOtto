@@ -8,4 +8,3 @@ pub mod play_toototto_with_human;
 pub mod game_history;
 pub mod score_board;
 pub mod page_not_found;
-pub mod text_input;

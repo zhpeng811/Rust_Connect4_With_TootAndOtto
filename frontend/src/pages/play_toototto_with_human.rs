@@ -1,8 +1,8 @@
 use yew::prelude::*;
 use yew::html::InputData;
-use crate::pages::text_input::TextInput;
-use crate::components::canvas_model::CanvasModel;
 use yew_components::Select;
+use crate::components::text_input::TextInput;
+use crate::components::canvas_model::CanvasModel;
 use crate::components::alert::alert;
 use model::ai::Difficulty;
 use model::board_size::BoardSize;
