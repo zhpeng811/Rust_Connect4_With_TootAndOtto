@@ -10,6 +10,11 @@ Or you can do it in one-shot with
 ```
 (cd frontend && trunk serve)
 ```
+
+If the above command is successful, you can use the application at `http://127.0.0.1:8080/` using any browsers.
+
+If the above command is not successful, see instructions below for possible fix.
+
 **Note** The current rust versions have an error with stdweb. A known working version of rust can be installed with:
 ```
 rustup override set 1.45.0
