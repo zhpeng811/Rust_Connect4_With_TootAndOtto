@@ -1,9 +1,9 @@
 use yew::prelude::*;
-use crate::pages::text_input::TextInput;
 use yew_components::Select;
 use model::ai::Difficulty;
 use model::board_size::BoardSize;
 use crate::components::canvas_model::CanvasModel;
+use crate::components::text_input::TextInput;
 use crate::components::alert::alert;
 
 pub enum Msg {

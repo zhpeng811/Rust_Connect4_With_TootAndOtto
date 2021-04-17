@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::pages::text_input::TextInput;
+use crate::components::text_input::TextInput;
 use crate::components::canvas_model::CanvasModel;
 use crate::components::alert::alert;
 use yew_components::Select;

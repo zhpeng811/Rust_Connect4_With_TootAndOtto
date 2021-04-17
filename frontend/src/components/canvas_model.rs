@@ -25,7 +25,7 @@ use yew::{
 use model::ai::{Difficulty, Connect4AI, TootOttoAI};
 use model::game::*;
 
-use crate::pages::game_history::HistoryInfo;
+use crate::types::HistoryInfo;
 
 pub struct CanvasModel {
     props: Props,

@@ -3,17 +3,7 @@ use anyhow::Error;
 use yew::prelude::*;
 use yew::services::fetch::{FetchService, FetchTask, Request, Response};
 use yew::format::{Json, Nothing};
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct HistoryInfo {
-    pub game_type: String,
-    pub player1: String,
-    pub player2: String,
-    pub winner: String,
-    pub difficulty: String,
-    pub time_played: String,
-}
+use crate::types::HistoryInfo;
 
 pub struct GameHistory {
     link: ComponentLink<Self>,

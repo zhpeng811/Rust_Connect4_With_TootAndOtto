@@ -2,7 +2,7 @@ use yew::prelude::*;
 use yew::services::fetch::{FetchService, FetchTask, Request, Response};
 use yew::format::Json;
 use std::collections::HashMap;
-use crate::pages::game_history::HistoryInfo;
+use crate::types::HistoryInfo;
 
 // this Struct and its impelementation is very similar to GameHistory in game_history.rs
 // only the stats functions and htmls are different 
