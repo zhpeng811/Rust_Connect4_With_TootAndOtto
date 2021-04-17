@@ -44,7 +44,8 @@ fn fill_map(
 
     let mut temp_map = new_state.clone();
     if temp_map[0][column] != 0 || column >= board_columns {
-        temp_map[0][0] = ERR_CODE; 
+        temp_map[0][0] = ERR_CODE;
+        return temp_map;
     }
 
     let mut done = false;
@@ -555,7 +556,6 @@ impl TootOttoAI {
                     } else if temp_val == v {
                         move_queue.push((j as i64, *letter));
                     }
-
                     // alpha-beta pruning
                     if v > beta {
                         new_move = choose(&move_queue);
