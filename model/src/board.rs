@@ -50,6 +50,10 @@ impl Board {
         count == self.board_columns
     }
 
+    pub fn is_column_full(&self, column: usize) -> bool {
+        self.board[0][column] != DiscType::Empty
+    }
+
     pub fn get_valid_columns(&self) -> Vec<usize> {
         let mut result: Vec<usize> = Vec::new();
         for i in 0..self.board_columns {

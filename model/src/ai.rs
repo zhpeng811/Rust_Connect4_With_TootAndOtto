@@ -72,11 +72,6 @@ fn get_random_index(len: usize) -> usize {
     return (random * len as f64).floor() as usize;
 }
 
-fn choose<T: Copy>(choice: &Vec<T>) -> T {
-    let index = get_random_index(choice.len());
-    return choice[index];
-}
-
 pub fn check_state(state: &Vec<Vec<i64>>, board_rows: usize, board_columns: usize, is_sign: bool) -> (i64, i64) {
     let mut win_val = 0;
     let mut chain_val = 0;
@@ -192,7 +187,7 @@ impl Connect4AI {
             _ => { // Hard or Insane, use minmax algorithm with alpha-beta pruning
                 let choice_val = self.max_state(-1, &self.score_board, 0, -100000000007, 100000000007);
                 let choice = choice_val.1;
-                if choice < 0 || choice as usize > self.board_columns {
+                if choice < 0 || choice as usize > self.board_columns || game.game_board.is_column_full(choice as usize) {
                     return self.random_gen(game.game_board.clone());
                 }
                 return choice as usize;
@@ -226,6 +221,15 @@ impl Connect4AI {
         }
 
         -1
+    }
+
+    fn choose(&self, choice: &Vec<i64>) -> i64 {
+        if choice.len() == 0 {
+            return 0;
+        }
+
+        let index = get_random_index(choice.len());
+        return choice[index];
     }
 
     pub fn value(
@@ -300,14 +304,14 @@ impl Connect4AI {
 
                 // alpha-beta pruning
                 if v > beta {
-                    move_val = choose(&move_queue);
+                    move_val = self.choose(&move_queue);
                     return (v, move_val);
                 }
                 alpha = std::cmp::max(alpha, v);
             }
         }
 
-        move_val = choose(&move_queue);
+        move_val = self.choose(&move_queue);
         return (v, move_val);
     }
 
@@ -337,14 +341,14 @@ impl Connect4AI {
 
                 // alpha-beta pruning
                 if v < alpha {
-                    move_val = choose(&move_queue);
+                    move_val = self.choose(&move_queue);
                     return (v, move_val);
                 }
                 beta = std::cmp::min(beta, v);
             }
         }
-        move_val = choose(&move_queue);
 
+        move_val = self.choose(&move_queue);
         return (v, move_val);
     }
 }
@@ -424,7 +428,7 @@ impl TootOttoAI {
             _ => { // Hard or Insane
                 let choice_val = self.max_state(&self.score_board, 0, -100000000007, 100000000007);
                 let (column, letter) = choice_val.1;
-                if column < 0 || column as usize > self.board_columns {
+                if column < 0 || column as usize > self.board_columns || game.game_board.is_column_full(column as usize) {
                     return self.random_gen(game.game_board.clone());
                 }
                 let ret_let = if letter == 'T' { DiscType::T } else { DiscType::O };
@@ -483,6 +487,15 @@ impl TootOttoAI {
         }
 
         (-1, DiscType::Empty)
+    }
+
+    fn choose(&self, choice: &Vec<(i64, char)>) -> (i64, char) {
+        if choice.len() == 0 {
+            return (0, 'T'); // default, needed for intermediate returns
+        }
+
+        let index = get_random_index(choice.len());
+        return choice[index];
     }
 
     pub fn value(
@@ -558,14 +571,14 @@ impl TootOttoAI {
                     }
                     // alpha-beta pruning
                     if v > beta {
-                        new_move = choose(&move_queue);
+                        new_move = self.choose(&move_queue);
                         return (v, new_move);
                     }
                     alpha = std::cmp::max(alpha, v);
                 }
             }
         }
-        new_move = choose(&move_queue);
+        new_move = self.choose(&move_queue);
 
         return (v, new_move);
     }
@@ -597,14 +610,14 @@ impl TootOttoAI {
 
                     // alpha-beta pruning
                     if v < alpha {
-                        new_move = choose(&move_queue);
+                        new_move = self.choose(&move_queue);
                         return (v, new_move);
                     }
                     beta = std::cmp::min(beta, v);
                 }
             }
         }
-        new_move = choose(&move_queue);
+        new_move = self.choose(&move_queue);
 
         return (v, new_move);
     }

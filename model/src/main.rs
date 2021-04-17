@@ -260,8 +260,8 @@ fn main() {
         match input {
             1 => play_connect4_with_computer(6, 7, difficulty),
             2 => play_connect4_with_human(6, 7),
-            3 => play_toototto_with_computer(7, 10, difficulty),
-            4 => play_toototto_with_human(6, 7),
+            3 => play_toototto_with_computer(4, 6, difficulty),
+            4 => play_toototto_with_human(4, 6),
             5 => difficulty = change_difficulty(),
             6 => break,
             _ => {
